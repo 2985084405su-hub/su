@@ -279,24 +279,6 @@ def experience_subscribe(subscribe_data):
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 subscribe_data = select_subscribe_title('VAVA', 2)
 
 
