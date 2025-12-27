@@ -936,4 +936,4 @@ if __name__ == "__main__":
     #1-个人中心信用卡支付 2-For You信用卡支付 3-个人中心PayPal支付 4-For You PayPal支付
     #5-个人中心老aw_more支付 6-For You老aw_more支付 7-个人中心老st_more支付 8-For You老st_more支付
     #9-个人中心新aw_more支付 10-For You新aw_more支付 11-个人中心新st_more支付 12-For You新st_more支付
-    subscribe_test('VAVA',2,1)
+    subscribe_test('VIVI',2,1)
