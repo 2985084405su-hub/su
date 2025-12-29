@@ -44,28 +44,71 @@ def run_script_with_variables(variables):
         
         # 添加变量作为环境变量
         env = os.environ.copy()
-        for var in variables:
-            env[var['name']] = var['value']
+        env['PYTHONIOENCODING'] = 'utf-8'  # 设置Python输出编码
         
-        # 运行脚本
+        for var in variables:
+            if 'value' in var:
+                env[var['name']] = var['value']
+            else:
+                env[var['name']] = var.get('default', '')
+        
+        script_output = ["开始运行测试脚本..."]
+        
+        # 运行脚本，使用二进制模式然后手动解码
         current_process = subprocess.Popen(
             cmd,
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
-            text=True,
             bufsize=1,
             env=env
         )
         
-        # 实时读取输出
-        script_output = []
-        for line in iter(current_process.stdout.readline, ''):
-            script_output.append(line.strip())
-            if len(script_output) > 100:  # 限制输出行数
-                script_output.pop(0)
+        # 处理输出流
+        def read_output(stream):
+            try:
+                while True:
+                    # 读取二进制数据
+                    line_bytes = stream.readline()
+                    if not line_bytes:
+                        break
+                    
+                    # 尝试多种编码解码
+                    line_text = None
+                    for encoding in ['utf-8', 'gbk', 'latin-1']:
+                        try:
+                            line_text = line_bytes.decode(encoding, errors='replace')
+                            break
+                        except UnicodeDecodeError:
+                            continue
+                    
+                    if line_text is None:
+                        # 所有编码都失败，使用安全方式
+                        line_text = line_bytes.decode('utf-8', errors='replace')
+                    
+                    # 清理特殊字符
+                    cleaned_line = line_text.strip()
+                    # 移除或替换无法显示的控制字符
+                    cleaned_line = ''.join(char for char in cleaned_line 
+                                         if ord(char) >= 32 or char == '\n' or char == '\t')
+                    
+                    script_output.append(cleaned_line)
+                    if len(script_output) > 100:
+                        script_output.pop(0)
+                        
+            except Exception as e:
+                script_output.append(f"读取输出错误: {str(e)}")
         
-        current_process.stdout.close()
+        # 在新线程中读取输出
+        import threading
+        output_thread = threading.Thread(target=read_output, args=(current_process.stdout,))
+        output_thread.daemon = True
+        output_thread.start()
+        
+        # 等待进程结束
         current_process.wait()
+        output_thread.join(timeout=1)
+        
+        script_output.append("脚本执行完成")
         
     except Exception as e:
         script_output.append(f"错误: {str(e)}")
