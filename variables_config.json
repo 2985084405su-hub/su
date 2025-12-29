@@ -22,5 +22,37 @@
     "default": "1",
     "required": true,
     "description": "1-个人中心信用卡 2-For You信用卡 3-个人中心PayPal 4-For You PayPal\n5-个人中心老aw_more 6-For You老aw_more\n7-个人中心老st_more 8-For You老st_more\n9-个人中心新aw_more 10-For You新aw_more\n11-个人中心新st_more 12-For You新st_more"
+  },
+  {
+    "name": "user_email",
+    "label": "用户邮箱",
+    "type": "text",
+    "default": "2985084405su@gmail.com",
+    "required": false,
+    "description": "用于支付的用户邮箱（可选，不填使用默认值）"
+  },
+  {
+    "name": "card_no",
+    "label": "信用卡号",
+    "type": "text",
+    "default": "4111111111111111",
+    "required": false,
+    "description": "信用卡号码（可选，不填使用默认值）"
+  },
+  {
+    "name": "card_expire",
+    "label": "信用卡有效期",
+    "type": "text",
+    "default": "03/30",
+    "required": false,
+    "description": "格式: MM/YY（可选，不填使用默认值）"
+  },
+  {
+    "name": "card_cvv",
+    "label": "CVV安全码",
+    "type": "text",
+    "default": "737",
+    "required": false,
+    "description": "信用卡背面3位安全码（可选，不填使用默认值）"
   }
 ]

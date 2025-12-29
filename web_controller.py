@@ -12,30 +12,26 @@ app = Flask(__name__)
 VARIABLES_FILE = 'variables_config.json'
 VALUES_FILE = 'user_values.json'
 
-# 默认变量配置
+# 更新默认变量配置，将支付相关参数改为非必填
 default_variables = [
     {"name": "site_name", "label": "站点名称", "type": "text", "default": "VAVA", "required": True},
     {"name": "subscribe_type", "label": "订阅类型", "type": "number", "default": "2", "required": True},
     {"name": "pay_type", "label": "支付类型", "type": "number", "default": "1", "required": True, 
-     "description": "1-个人中心信用卡 2-For You信用卡 3-个人中心PayPal 4-For You PayPal\n5-个人中心老aw_more 6-For You老aw_more\n7-个人中心老st_more 8-For You老st_more\n9-个人中心新aw_more 10-For You新aw_more\n11-个人中心新st_more 12-For You新st_more"}
-]
-
-# 存储当前进程
-current_process = None
-script_output = []
-
-# 默认变量配置
-default_variables = [
-    {"name": "site_name", "label": "站点名称", "type": "text", "default": "VAVA", "required": True},
-    {"name": "subscribe_type", "label": "订阅类型", "type": "number", "default": "2", "required": True},
-    {"name": "pay_type", "label": "支付类型", "type": "number", "default": "1", "required": True, 
-     "description": "1-个人中心信用卡 2-For You信用卡 3-个人中心PayPal 4-For You PayPal\n5-个人中心老aw_more 6-For You老aw_more\n7-个人中心老st_more 8-For You老st_more\n9-个人中心新aw_more 10-For You新aw_more\n11-个人中心新st_more 12-For You新st_more"}
+     "description": "1-个人中心信用卡 2-For You信用卡 3-个人中心PayPal 4-For You PayPal\n5-个人中心老aw_more 6-For You老aw_more\n7-个人中心老st_more 8-For You老st_more\n9-个人中心新aw_more 10-For You新aw_more\n11-个人中心新st_more 12-For You新st_more"},
+    # 将支付相关参数改为非必填
+    {"name": "user_email", "label": "用户邮箱", "type": "text", "default": "2985084405su@gmail.com", "required": False,
+     "description": "用于支付的用户邮箱（可选，不填使用默认值）"},
+    {"name": "card_no", "label": "信用卡号", "type": "text", "default": "4111111111111111", "required": False,
+     "description": "信用卡号码（可选，不填使用默认值）"},
+    {"name": "card_expire", "label": "信用卡有效期", "type": "text", "default": "03/30", "required": False,
+     "description": "格式: MM/YY（可选，不填使用默认值）"},
+    {"name": "card_cvv", "label": "CVV安全码", "type": "text", "default": "737", "required": False,
+     "description": "信用卡背面3位安全码（可选，不填使用默认值）"}
 ]
 
 # 存储当前进程和输出
 current_process = None
 script_output = []
-
 
 def load_variables():
     """加载变量配置"""
@@ -95,10 +91,9 @@ def run_script_with_variables(variables):
     global current_process, script_output
     
     try:
-        import time
         from datetime import datetime
         
-        # 构建命令行参数
+        # 构建命令行参数 - 修正路径为 tuoliuC/testsmart.py
         cmd = [sys.executable, 'tuoliuC/testsmart.py']
         
         # 添加变量作为环境变量
@@ -109,11 +104,15 @@ def run_script_with_variables(variables):
         actual_values = []
         for var in variables:
             value = var.get('value', var.get('default', ''))
+            # 如果用户留空，则使用默认值
+            if value == '' and not var.get('required', False):
+                value = var.get('default', '')
             env[var['name']] = str(value)
             actual_values.append(f"{var['name']}={value}")
         
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         script_output.append(f"[{timestamp}] 开始运行测试脚本")
+        script_output.append(f"[{timestamp}] 脚本路径: tuoliuC/testsmart.py")
         script_output.append(f"[{timestamp}] 使用的变量值: {', '.join(actual_values)}")
         
         # 运行脚本
@@ -129,14 +128,12 @@ def run_script_with_variables(variables):
         )
         
         # 实时读取输出
-        output_lines = []
         for line in iter(current_process.stdout.readline, ''):
             if line:
                 cleaned_line = line.strip()
                 timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                output_lines.append(f"[{timestamp}] {cleaned_line}")
                 script_output.append(f"[{timestamp}] {cleaned_line}")
-                if len(script_output) > 1000:  # 增加缓存行数
+                if len(script_output) > 1000:
                     script_output.pop(0)
         
         current_process.stdout.close()
@@ -172,7 +169,11 @@ def run_test():
     for var in variables:
         var_name = var['name']
         if var_name in form_data:
-            var['value'] = form_data[var_name]
+            # 如果用户留空且不是必填参数，使用默认值
+            if form_data[var_name] == '' and not var.get('required', False):
+                var['value'] = var.get('default', '')
+            else:
+                var['value'] = form_data[var_name]
     
     # 在后台线程中运行脚本
     script_output = ["开始运行测试脚本..."]
@@ -191,42 +192,6 @@ def stop_test():
         current_process = None
         script_output.append("测试已停止")
     return redirect(url_for('index'))
-
-@app.route('/add_variable', methods=['POST'])
-def add_variable():
-    """添加新变量"""
-    variables = load_variables()
-    
-    new_var = {
-        "name": request.form.get('name', '').strip(),
-        "label": request.form.get('label', '').strip(),
-        "type": request.form.get('type', 'text'),
-        "default": request.form.get('default', ''),
-        "required": request.form.get('required') == 'true',
-        "description": request.form.get('description', '')
-    }
-    
-    if new_var['name']:
-        variables.append(new_var)
-        save_variables(variables)
-    
-    return redirect(url_for('index'))
-
-@app.route('/remove_variable/<var_name>')
-def remove_variable(var_name):
-    """移除变量"""
-    variables = load_variables()
-    variables = [v for v in variables if v['name'] != var_name]
-    save_variables(variables)
-    
-    # 也从用户值中移除
-    user_values = load_user_values()
-    if var_name in user_values:
-        del user_values[var_name]
-        save_user_values(user_values)
-    
-    return redirect(url_for('index'))
-
 
 @app.route('/reset_variables')
 def reset_variables():
@@ -260,7 +225,7 @@ def get_output():
     return jsonify({
         "output": "\n".join(recent_output),
         "total_lines": len(script_output),
-        "timestamp": time.time() if 'time' in globals() else None
+        "timestamp": time.time()
     })
 
 if __name__ == '__main__':
@@ -271,5 +236,9 @@ if __name__ == '__main__':
     # 保存初始变量配置
     if not os.path.exists(VARIABLES_FILE):
         save_variables(default_variables)
+    
+    print("启动测试脚本控制器...")
+    print("脚本路径: tuoliuC/testsmart.py")
+    print("请访问: http://localhost:5000")
     
     app.run(debug=True, port=5000)

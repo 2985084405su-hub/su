@@ -2,18 +2,33 @@ import time
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from smart_locator import SmartLocator, click_interactable, ScrollHandler, IFrameHandler, select_subscribe_title
-
 import os
 import sys
 
 
 
-
+# 从环境变量获取参数，支持空值
+def get_env_variable(name, default=None):
+    """从环境变量获取参数"""
+    value = os.environ.get(name)
+    
+    # 调试输出，查看实际接收到的值
+    print(f"DEBUG: 获取环境变量 {name} = '{value}' (原始), 默认值 = '{default}'")
+    
+    if value is None:
+        # 环境变量不存在
+        return default
+    elif value == '':
+        # 环境变量存在但为空字符串
+        return default
+    else:
+        # 环境变量有值
+        return value
 
 
 
 # 卡支付个人中心订阅流程
-def profile_card_subscribe(subscribe_data):
+def profile_card_subscribe(subscribe_data, user_email, card_no, card_expire, card_cvv):
     """卡支付个人中心订阅流程"""
     chrome_options = Options()
     chrome_options.add_experimental_option(
@@ -42,16 +57,16 @@ def profile_card_subscribe(subscribe_data):
     #填写支付信息
     card_number_input = locator.find_element("name=card_no")
     card_number_input.clear()
-    card_number_input.send_keys("4111111111111111")
+    card_number_input.send_keys(card_no)
     email_input = locator.find_element("name=email")
     email_input.clear()
-    email_input.send_keys("2985084405su@gmail.com")
+    email_input.send_keys(user_email)
     expire_date_input = locator.find_element("name=expire_date")
     expire_date_input.clear()
-    expire_date_input.send_keys("03/30")
+    expire_date_input.send_keys(card_expire)
     cvv_input = locator.find_element("name=cvv")
     cvv_input.clear()
-    cvv_input.send_keys("737")
+    cvv_input.send_keys(card_cvv)
     first_name_input = locator.find_element("css=input[placeholder='FirstName']")
     first_name_input.clear()
     first_name_input.send_keys("John")
@@ -92,7 +107,7 @@ def profile_card_subscribe(subscribe_data):
     driver.quit()
 
 # 卡支付FOR YOU 订阅流程
-def foryou_card_subscribe(subscribe_data):
+def foryou_card_subscribe(subscribe_data, user_email, card_no, card_expire, card_cvv):
     """卡支付FOR YOU 订阅流程"""
     chrome_options = Options()
 
@@ -132,16 +147,16 @@ def foryou_card_subscribe(subscribe_data):
     #填写支付信息
     card_number_input = locator.find_element("name=card_no")
     card_number_input.clear()
-    card_number_input.send_keys("4111111111111111")
+    card_number_input.send_keys(card_no)
     email_input = locator.find_element("name=email")
     email_input.clear()
-    email_input.send_keys("2985084405@gmail.com")
+    email_input.send_keys(user_email)
     expire_date_input = locator.find_element("name=expire_date")
     expire_date_input.clear()
-    expire_date_input.send_keys("03/30")
+    expire_date_input.send_keys(card_expire)
     cvv_input = locator.find_element("name=cvv")
     cvv_input.clear()
-    cvv_input.send_keys("737")
+    cvv_input.send_keys(card_cvv)
     first_name_input = locator.find_element("css=input[placeholder='FirstName']")
     first_name_input.clear()
     first_name_input.send_keys("John")
@@ -178,7 +193,7 @@ def foryou_card_subscribe(subscribe_data):
     driver.quit()
 
 # PayPal支付个人中心订阅流程
-def profile_paypal_subscribe(subscribe_data):
+def profile_paypal_subscribe(subscribe_data, user_email):
     """PayPal支付个人中心订阅流程"""
     chrome_options = Options()
     chrome_options.add_experimental_option(
@@ -207,7 +222,7 @@ def profile_paypal_subscribe(subscribe_data):
     #paypal支付页面输入账号
     paypal_email_input = locator.find_element("id=email")
     paypal_email_input.clear()
-    paypal_email_input.send_keys("sx-duanjuceshi7@personal.example.com")
+    paypal_email_input.send_keys(user_email)
     #点击下一步
     paypal_btnNext = locator.find_element("id=btnNext")
     click_interactable(paypal_btnNext, driver)
@@ -232,7 +247,7 @@ def profile_paypal_subscribe(subscribe_data):
     driver.quit()
 
 # PayPal支付FOR YOU 订阅流程
-def foryou_paypal_subscribe(subscribe_data):
+def foryou_paypal_subscribe(subscribe_data, user_email):
     """ PayPal支付FOR YOU 订阅流程"""
     chrome_options = Options()
     chrome_options.add_experimental_option(
@@ -270,7 +285,7 @@ def foryou_paypal_subscribe(subscribe_data):
     #paypal支付页面输入账号
     paypal_email_input = locator.find_element("id=email")
     paypal_email_input.clear()
-    paypal_email_input.send_keys("sx-duanjuceshi7@personal.example.com")
+    paypal_email_input.send_keys(user_email)
     #点击下一步
     paypal_btnNext = locator.find_element("id=btnNext")
     click_interactable(paypal_btnNext, driver)
@@ -291,7 +306,7 @@ def foryou_paypal_subscribe(subscribe_data):
     driver.quit()
 
 # 老aw_more支付个人中心订阅流程
-def profile_awoldmore_subscribe(subscribe_data):
+def profile_awoldmore_subscribe(subscribe_data, user_email, card_no, card_expire, card_cvv):
     """ 老aw_more支付个人中心订阅流程"""
     chrome_options = Options()
     chrome_options.add_experimental_option(
@@ -324,7 +339,7 @@ def profile_awoldmore_subscribe(subscribe_data):
     sidebar = locator.find_element("class=van-field__body")
     eamil_more_input = locator.find_element("class=van-field__control", context=sidebar)
     eamil_more_input.clear()
-    eamil_more_input.send_keys("2985084405s@gmail.com")
+    eamil_more_input.send_keys(user_email)
     #提交邮箱
     more_contirm_btn = locator.find_element("xpath=//span[@class='van-button__text' and text()='Confirm']")
     click_interactable(more_contirm_btn, driver)
@@ -334,13 +349,13 @@ def profile_awoldmore_subscribe(subscribe_data):
     time.sleep(1)
     card_number_input = locator.find_element("id=cardNumber")
     card_number_input.clear()
-    card_number_input.send_keys("4111111111111111")
+    card_number_input.send_keys(card_no)
     expire_date_input = locator.find_element("id=cardExpiry")
     expire_date_input.clear()
-    expire_date_input.send_keys("03/30")
+    expire_date_input.send_keys(card_expire)
     cvv_input = locator.find_element("id=cardCvc")
     cvv_input.clear()
-    cvv_input.send_keys("737")
+    cvv_input.send_keys(card_cvv)
     name_input = locator.find_element("id=billingName")
     name_input.clear()
     name_input.send_keys("sxy sxy")
@@ -370,7 +385,7 @@ def profile_awoldmore_subscribe(subscribe_data):
     driver.quit()
 
 # 老aw_more支付FOR YOU 订阅流程
-def foryou_awoldmore_subscribe(subscribe_data):
+def foryou_awoldmore_subscribe(subscribe_data, user_email, card_no, card_expire, card_cvv):
     """ 老aw_more支付FOR YOU 订阅流程"""
     chrome_options = Options()
     chrome_options.add_experimental_option(
@@ -412,7 +427,7 @@ def foryou_awoldmore_subscribe(subscribe_data):
     sidebar = locator.find_element("class=van-field__body")
     eamil_more_input = locator.find_element("class=van-field__control", context=sidebar)
     eamil_more_input.clear()
-    eamil_more_input.send_keys("2985084405s@gmail.com")
+    eamil_more_input.send_keys(user_email)
     #提交邮箱
     more_contirm_btn = locator.find_element("xpath=//span[@class='van-button__text' and text()='Confirm']")
     click_interactable(more_contirm_btn, driver)
@@ -422,13 +437,13 @@ def foryou_awoldmore_subscribe(subscribe_data):
     time.sleep(1)
     card_number_input = locator.find_element("id=cardNumber")
     card_number_input.clear()
-    card_number_input.send_keys("4111111111111111")
+    card_number_input.send_keys(card_no)
     expire_date_input = locator.find_element("id=cardExpiry")
     expire_date_input.clear()
-    expire_date_input.send_keys("03/30")
+    expire_date_input.send_keys(card_expire)
     cvv_input = locator.find_element("id=cardCvc")
     cvv_input.clear()
-    cvv_input.send_keys("737")
+    cvv_input.send_keys(card_cvv)
     name_input = locator.find_element("id=billingName")
     name_input.clear()
     name_input.send_keys("sxy sxy")
@@ -453,7 +468,7 @@ def foryou_awoldmore_subscribe(subscribe_data):
     driver.quit()
 
 # 老st_more支付个人中心订阅流程
-def profile_stoldmore_subscribe(subscribe_data):
+def profile_stoldmore_subscribe(subscribe_data, user_email, card_no, card_expire, card_cvv):
     """老st_more支付个人中心订阅流程"""
     chrome_options = Options()
     chrome_options.add_experimental_option(
@@ -488,16 +503,16 @@ def profile_stoldmore_subscribe(subscribe_data):
     time.sleep(1)
     eaml_more_input = locator.find_element("id=email")
     eaml_more_input.clear()
-    eaml_more_input.send_keys("2985084405s@gmail.com")
+    eaml_more_input.send_keys(user_email)
     card_number_input = locator.find_element("id=cardNumber")
     card_number_input.clear()
-    card_number_input.send_keys("4111111111111111")
+    card_number_input.send_keys(card_no)
     expire_date_input = locator.find_element("id=cardExpiry")
     expire_date_input.clear()
-    expire_date_input.send_keys("03/30")
+    expire_date_input.send_keys(card_expire)
     cvv_input = locator.find_element("id=cardCvc")
     cvv_input.clear()
-    cvv_input.send_keys("737")
+    cvv_input.send_keys(card_cvv)
     name_input = locator.find_element("id=billingName")
     name_input.clear()
     name_input.send_keys("sxy sxy")
@@ -526,7 +541,7 @@ def profile_stoldmore_subscribe(subscribe_data):
     driver.quit()
 
 # 老st_more支付FOR YOU 订阅流程
-def foryou_stoldmore_subscribe(subscribe_data):
+def foryou_stoldmore_subscribe(subscribe_data, user_email, card_no, card_expire, card_cvv):
     """ 老st_more支付FOR YOU 订阅流程"""
     chrome_options = Options()
     chrome_options.add_experimental_option(
@@ -570,16 +585,16 @@ def foryou_stoldmore_subscribe(subscribe_data):
     time.sleep(1)
     eaml_more_input = locator.find_element("id=email")
     eaml_more_input.clear()
-    eaml_more_input.send_keys("2985084405s@gmail.com")
+    eaml_more_input.send_keys(user_email)
     card_number_input = locator.find_element("id=cardNumber")
     card_number_input.clear()
-    card_number_input.send_keys("4111111111111111")
+    card_number_input.send_keys(card_no)
     expire_date_input = locator.find_element("id=cardExpiry")
     expire_date_input.clear()
-    expire_date_input.send_keys("03/30")
+    expire_date_input.send_keys(card_expire)
     cvv_input = locator.find_element("id=cardCvc")
     cvv_input.clear()
-    cvv_input.send_keys("737")
+    cvv_input.send_keys(card_cvv)
     name_input = locator.find_element("id=billingName")
     name_input.clear()
     name_input.send_keys("sxy sxy")
@@ -604,7 +619,7 @@ def foryou_stoldmore_subscribe(subscribe_data):
     driver.quit()
 
 # 新aw_more支付个人中心订阅流程
-def profile_awnewmore_subscribe(subscribe_data):
+def profile_awnewmore_subscribe(subscribe_data, user_email, card_no, card_expire, card_cvv):
     """新aw_more支付个人中心订阅流程"""
     chrome_options = Options()
     chrome_options.add_experimental_option(
@@ -637,7 +652,7 @@ def profile_awnewmore_subscribe(subscribe_data):
     sidebar = locator.find_element("class=van-field__body")
     eamil_more_input = locator.find_element("class=van-field__control", context=sidebar)
     eamil_more_input.clear()
-    eamil_more_input.send_keys("2985084405s@gmail.com")
+    eamil_more_input.send_keys(user_email)
     #提交邮箱
     more_contirm_btn = locator.find_element("xpath=//span[@class='van-button__text' and text()='Confirm']")
     click_interactable(more_contirm_btn, driver)
@@ -645,13 +660,13 @@ def profile_awnewmore_subscribe(subscribe_data):
     time.sleep(1)
     card_number_input = locator.find_element("name=cardnumber")
     card_number_input.clear()
-    card_number_input.send_keys("4111111111111111")
+    card_number_input.send_keys(card_no)
     expire_date_input = locator.find_element("name=expiry")
     expire_date_input.clear()
-    expire_date_input.send_keys("03/30")
+    expire_date_input.send_keys(card_expire)
     cvv_input = locator.find_element("name=cvc")
     cvv_input.clear()
-    cvv_input.send_keys("737")
+    cvv_input.send_keys(card_cvv)
     name_input = locator.find_element("name=name")
     name_input.clear()
     name_input.send_keys("sxy sxy")
@@ -683,7 +698,7 @@ def profile_awnewmore_subscribe(subscribe_data):
     driver.quit()
 
 # 新aw_more支付FOR YOU 订阅流程
-def foryou_awnewmore_subscribe(subscribe_data):
+def foryou_awnewmore_subscribe(subscribe_data, user_email, card_no, card_expire, card_cvv):
     """ 新aw_more支付FOR YOU 订阅流程"""
     chrome_options = Options()
     chrome_options.add_experimental_option(
@@ -725,7 +740,7 @@ def foryou_awnewmore_subscribe(subscribe_data):
     sidebar = locator.find_element("class=van-field__body")
     eamil_more_input = locator.find_element("class=van-field__control", context=sidebar)
     eamil_more_input.clear()
-    eamil_more_input.send_keys("2985084405s@gmail.com")
+    eamil_more_input.send_keys(user_email)
     #提交邮箱
     more_contirm_btn = locator.find_element("xpath=//span[@class='van-button__text' and text()='Confirm']")
     click_interactable(more_contirm_btn, driver)
@@ -733,13 +748,13 @@ def foryou_awnewmore_subscribe(subscribe_data):
     time.sleep(1)
     card_number_input = locator.find_element("name=cardnumber")
     card_number_input.clear()
-    card_number_input.send_keys("4111111111111111")
+    card_number_input.send_keys(card_no)
     expire_date_input = locator.find_element("name=expiry")
     expire_date_input.clear()
-    expire_date_input.send_keys("03/30")
+    expire_date_input.send_keys(card_expire)
     cvv_input = locator.find_element("name=cvc")
     cvv_input.clear()
-    cvv_input.send_keys("737")
+    cvv_input.send_keys(card_cvv)
     name_input = locator.find_element("name=name")
     name_input.clear()
     name_input.send_keys("sxy sxy")
@@ -767,7 +782,7 @@ def foryou_awnewmore_subscribe(subscribe_data):
     driver.quit()
 
 # 新st_more支付个人中心订阅流程
-def profile_stnewmore_subscribe(subscribe_data):
+def profile_stnewmore_subscribe(subscribe_data, card_no, card_expire, card_cvv):
     """新st_more支付个人中心订阅流程"""
     chrome_options = Options()
     chrome_options.add_experimental_option(
@@ -799,13 +814,13 @@ def profile_stnewmore_subscribe(subscribe_data):
     time.sleep(1)
     card_number_input = locator.find_element("name=cardnumber")
     card_number_input.clear()
-    card_number_input.send_keys("4111111111111111")
+    card_number_input.send_keys(card_no)
     expire_date_input = locator.find_element("name=expiry")
     expire_date_input.clear()
-    expire_date_input.send_keys("03/30")
+    expire_date_input.send_keys(card_expire)
     cvv_input = locator.find_element("name=cvc")
     cvv_input.clear()
-    cvv_input.send_keys("737")
+    cvv_input.send_keys(card_cvv)
     name_input = locator.find_element("name=name")
     name_input.clear()
     name_input.send_keys("sxy sxy")
@@ -837,7 +852,7 @@ def profile_stnewmore_subscribe(subscribe_data):
     driver.quit()
 
 # 新st_more支付FOR YOU 订阅流程
-def foryou_stnewmore_subscribe(subscribe_data):
+def foryou_stnewmore_subscribe(subscribe_data, card_no, card_expire, card_cvv):
     """新st_more支付FOR YOU 订阅流程"""
     chrome_options = Options()
     chrome_options.add_experimental_option(
@@ -878,13 +893,13 @@ def foryou_stnewmore_subscribe(subscribe_data):
     time.sleep(1)
     card_number_input = locator.find_element("name=cardnumber")
     card_number_input.clear()
-    card_number_input.send_keys("4111111111111111")
+    card_number_input.send_keys(card_no)
     expire_date_input = locator.find_element("name=expiry")
     expire_date_input.clear()
-    expire_date_input.send_keys("03/30")
+    expire_date_input.send_keys(card_expire)
     cvv_input = locator.find_element("name=cvc")
     cvv_input.clear()
-    cvv_input.send_keys("737")
+    cvv_input.send_keys(card_cvv)
     name_input = locator.find_element("name=name")
     name_input.clear()
     name_input.send_keys("sxy sxy")
@@ -912,74 +927,76 @@ def foryou_stnewmore_subscribe(subscribe_data):
     driver.quit()
 
 
-def subscribe_test(site_name='VAVA',subscribe_type=2,pay_type=1):
-    subscribe_data = select_subscribe_title(site_name,subscribe_type)
+def subscribe_test(site_name='VAVA',
+                   subscribe_type=2,
+                   pay_type=1,
+                   user_email='2985084405su@gmail.com',
+                   card_no='4111111111111111',
+                   card_expire='03/30',
+                   card_cvv='737'
+                   ):
+    """订阅测试主函数"""
+    subscribe_data = select_subscribe_title(site_name, subscribe_type)
     match pay_type:
         case 1:
-            profile_card_subscribe(subscribe_data)
+            profile_card_subscribe(subscribe_data, user_email, card_no, card_expire, card_cvv)
         case 2:
-            foryou_card_subscribe(subscribe_data)
+            foryou_card_subscribe(subscribe_data, user_email, card_no, card_expire, card_cvv)
         case 3:
-            profile_paypal_subscribe(subscribe_data)
+            # 注意：PayPal测试使用特定的测试邮箱
+            profile_paypal_subscribe(subscribe_data, "sx-duanjuceshi@personal.example.com")
         case 4:
-            foryou_paypal_subscribe(subscribe_data)
+            foryou_paypal_subscribe(subscribe_data, "sx-duanjuceshi@personal.example.com")
         case 5:
-            profile_awoldmore_subscribe(subscribe_data)
+            profile_awoldmore_subscribe(subscribe_data, user_email, card_no, card_expire, card_cvv)
         case 6:
-            foryou_awoldmore_subscribe(subscribe_data)
+            foryou_awoldmore_subscribe(subscribe_data, user_email, card_no, card_expire, card_cvv)
         case 7:
-            profile_stoldmore_subscribe(subscribe_data)
+            profile_stoldmore_subscribe(subscribe_data, user_email, card_no, card_expire, card_cvv)
         case 8:
-            foryou_stoldmore_subscribe(subscribe_data)
+            foryou_stoldmore_subscribe(subscribe_data, user_email, card_no, card_expire, card_cvv)
         case 9:
-            profile_awnewmore_subscribe(subscribe_data)
+            profile_awnewmore_subscribe(subscribe_data, user_email, card_no, card_expire, card_cvv)
         case 10:
-            foryou_awnewmore_subscribe(subscribe_data)
+            foryou_awnewmore_subscribe(subscribe_data, user_email, card_no, card_expire, card_cvv)
         case 11:
-            profile_stnewmore_subscribe(subscribe_data)
+            profile_stnewmore_subscribe(subscribe_data, card_no, card_expire, card_cvv)
         case 12:
-            foryou_stnewmore_subscribe(subscribe_data)
+            foryou_stnewmore_subscribe(subscribe_data, card_no, card_expire, card_cvv)
         case _:
             print("无效的支付类型")
 
-
-
-
-
-
-
-
-# 从环境变量获取参数
-def get_env_variable(name, default=None):
-    """从环境变量获取参数"""
-    return os.environ.get(name, default)
-
 def subscribe_test_from_env():
     """从环境变量运行测试"""
+    # 获取参数，正确处理空值
     site_name = get_env_variable('site_name', 'VAVA')
     subscribe_type = int(get_env_variable('subscribe_type', '2'))
     pay_type = int(get_env_variable('pay_type', '1'))
     
-    # 处理其他可能的环境变量
-    # custom_param = get_env_variable('custom_param')
-    # if custom_param:
-    #     print(f"自定义参数: {custom_param}")
+    # 获取支付相关参数
+    user_email = get_env_variable('user_email', '2985084405su@gmail.com')
+    card_no = get_env_variable('card_no', '4111111111111111')
+    card_expire = get_env_variable('card_expire', '03/30')
+    card_cvv = get_env_variable('card_cvv', '737')
     
-    subscribe_test(site_name, subscribe_type, pay_type)
+    # 打印实际使用的值
+    print("=" * 50)
+    print("实际使用的参数值:")
+    print(f"站点名称: {site_name}")
+    print(f"订阅类型: {subscribe_type}")
+    print(f"支付类型: {pay_type}")
+    print(f"用户邮箱: {user_email}")
+    print(f"信用卡号: {card_no}")
+    print(f"信用卡有效期: {card_expire}")
+    print(f"CVV安全码: {card_cvv}")
+    print("=" * 50)
+    
+    # 运行测试
+    subscribe_test(site_name, subscribe_type, pay_type, user_email, card_no, card_expire, card_cvv)
 
-# 修改主函数
 if __name__ == "__main__":
-    # 检查是否有命令行参数
-    if len(sys.argv) > 1:
-        # 使用命令行参数
-        site_name = sys.argv[1] if len(sys.argv) > 1 else 'VAVA'
-        subscribe_type = int(sys.argv[2]) if len(sys.argv) > 2 else 2
-        pay_type = int(sys.argv[3]) if len(sys.argv) > 3 else 1
-        subscribe_test(site_name, subscribe_type, pay_type)
-    else:
-        # 使用环境变量
-        subscribe_test_from_env()
-
+    # 修改为调用从环境变量运行的函数
+    subscribe_test_from_env()
 
 
 

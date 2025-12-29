@@ -209,67 +209,6 @@
             background: rgba(255, 255, 255, 0.2);
         }
         
-        .variable-item {
-            background: #f8f9fa;
-            border-left: 4px solid #667eea;
-            padding: 12px;
-            margin-bottom: 10px;
-            border-radius: 5px;
-        }
-        
-        .variable-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 8px;
-        }
-        
-        .variable-name {
-            font-weight: bold;
-            color: #333;
-        }
-        
-        .variable-actions {
-            display: flex;
-            gap: 5px;
-        }
-        
-        .icon-btn {
-            background: none;
-            border: none;
-            cursor: pointer;
-            color: #666;
-            padding: 2px 5px;
-        }
-        
-        .icon-btn:hover {
-            color: #333;
-        }
-        
-        .add-variable-form {
-            background: #f0f0f0;
-            padding: 15px;
-            border-radius: 5px;
-            margin-top: 20px;
-        }
-        
-        .form-row {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 10px;
-            margin-bottom: 10px;
-        }
-        
-        .checkbox-group {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .checkbox-group input {
-            width: auto;
-        }
-        
         .status-bar {
             background: white;
             border-radius: 5px;
@@ -443,55 +382,468 @@
         .output-filter input {
             flex-grow: 1;
         }
+        .output-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .output-header h2 {
+            margin: 0;
+        }
+        
+        .output-controls {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+        
+        .output-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: background 0.3s;
+        }
+        
+        .output-btn:hover {
+            background: #5a67d8;
+        }
+        
+        .output-btn.btn-danger {
+            background: #e74c3c;
+        }
+        
+        .output-btn.btn-danger:hover {
+            background: #c0392b;
+        }
+        
+        .output-btn.btn-success {
+            background: #48bb78;
+        }
+        
+        .output-btn.btn-success:hover {
+            background: #38a169;
+        }
+        
+        .output-btn.btn-warning {
+            background: #f39c12;
+        }
+        
+        .output-btn.btn-warning:hover {
+            background: #d35400;
+        }
+        
+        .output-info-bar {
+            background: #f8f9fa;
+            padding: 8px 12px;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .output-stats {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+        
+        .scroll-controls {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .scroll-btn {
+            background: #e9ecef;
+            border: 1px solid #dee2e6;
+            color: #495057;
+            padding: 4px 8px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 11px;
+        }
+        
+        .scroll-btn:hover {
+            background: #dee2e6;
+        }
+        
+        .scroll-mode {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 12px;
+        }
+        
+        .scroll-mode-toggle {
+            position: relative;
+            width: 40px;
+            height: 20px;
+        }
+        
+        .scroll-mode-checkbox {
+            display: none;
+        }
+        
+        .scroll-mode-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 20px;
+        }
+        
+        .scroll-mode-slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 2px;
+            bottom: 2px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        
+        .scroll-mode-checkbox:checked + .scroll-mode-slider {
+            background-color: #48bb78;
+        }
+        
+        .scroll-mode-checkbox:checked + .scroll-mode-slider:before {
+            transform: translateX(20px);
+        }
+        
+        /* 输出区域样式 */
+        #output {
+            background: #1a202c;
+            color: #cbd5e0;
+            padding: 15px;
+            border-radius: 5px;
+            min-height: 400px;
+            max-height: 500px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            white-space: pre-wrap;
+            line-height: 1.4;
+        }
+        
+        .log-line {
+            margin-bottom: 3px;
+            padding: 2px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        .log-line:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+        
+        .log-line.info {
+            color: #cbd5e0;
+        }
+        
+        .log-line.success {
+            color: #68d391;
+        }
+        
+        .log-line.error {
+            color: #fc8181;
+        }
+        
+        .log-line.warning {
+            color: #f6ad55;
+        }
+        
+        .log-line.debug {
+            color: #63b3ed;
+        }
+        
+        .timestamp {
+            color: #718096;
+            font-size: 12px;
+            margin-right: 10px;
+        }
+        
+        .new-line-indicator {
+            background: rgba(56, 161, 105, 0.1);
+            border-left: 3px solid #48bb78;
+            animation: highlight 2s ease-out;
+        }
+        
+        @keyframes highlight {
+            0% { background: rgba(56, 161, 105, 0.3); }
+            100% { background: rgba(56, 161, 105, 0.1); }
+        }
+        
+        /* 滚动条样式 */
+        #output::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        #output::-webkit-scrollbar-track {
+            background: #2d3748;
+            border-radius: 4px;
+        }
+        
+        #output::-webkit-scrollbar-thumb {
+            background: #4a5568;
+            border-radius: 4px;
+        }
+        
+        #output::-webkit-scrollbar-thumb:hover {
+            background: #718096;
+        }
+        
+        /* 顶部固定按钮 */
+        .scroll-top-btn {
+            position: absolute;
+            bottom: 15px;
+            right: 15px;
+            background: rgba(102, 126, 234, 0.8);
+            color: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            z-index: 100;
+        }
+        
+        .scroll-top-btn:hover {
+            background: #667eea;
+        }
+        
+        .scroll-bottom-btn {
+            position: absolute;
+            bottom: 65px;
+            right: 15px;
+            background: rgba(102, 126, 234, 0.8);
+            color: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            z-index: 100;
+        }
+        
+        .scroll-bottom-btn:hover {
+            background: #667eea;
+        }
+        
+        /* 搜索高亮 */
+        .highlight {
+            background-color: #f6e05e;
+            color: #1a202c;
+            padding: 0 2px;
+            border-radius: 2px;
+        }
+        
+        /* 过滤控件 */
+        .output-filters {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .filter-group label {
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .filter-select {
+            padding: 5px 10px;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+            background: white;
+            font-size: 12px;
+        }
+        
+        .search-input {
+            padding: 5px 10px;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+            flex-grow: 1;
+            min-width: 200px;
+            font-size: 12px;
+        }
+        
+        /* 清空确认弹窗 */
+        .confirm-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        
+        .confirm-dialog {
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            max-width: 400px;
+            width: 90%;
+        }
+        
+        .confirm-dialog h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        
+        .confirm-dialog p {
+            margin-bottom: 20px;
+            color: #666;
+        }
+        
+        .confirm-buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+        .paypal-hint {
+            display: none;
+            background: #f0f9ff;
+            border-left: 4px solid #0070ba;
+            padding: 10px 15px;
+            margin-top: 10px;
+            border-radius: 4px;
+            font-size: 14px;
+            color: #005ea6;
+        }
+        
+        .paypal-hint i {
+            margin-right: 8px;
+            color: #0070ba;
+        }
+        
+        .paypal-hint strong {
+            color: #003366;
+        }
+        
+        /* 提示信息 */
+        .field-hint {
+            font-size: 12px;
+            color: #6c757d;
+            margin-top: 3px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .field-hint i {
+            color: #0070ba;
+        }
+        
+        /* PayPal类型时的输入框样式（只是提示，不禁用） */
+        .paypal-email-input {
+            background-color: #f8fafc;
+            border-color: #cbd5e0;
+        }
+        
+        .paypal-email-input:focus {
+            border-color: #0070ba;
+            box-shadow: 0 0 0 3px rgba(0, 112, 186, 0.1);
+        }
+        
+        /* 推荐值样式 */
+        .suggested-value {
+            color: #0070ba;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
+<!-- 清空确认弹窗 -->
+    <div class="confirm-overlay" id="confirmOverlay">
+        <div class="confirm-dialog">
+            <h3><i class="fas fa-exclamation-triangle"></i> 确认清空</h3>
+            <p>确定要清空所有输出内容吗？此操作不可恢复。</p>
+            <div class="confirm-buttons">
+                <button class="output-btn" onclick="hideConfirm()">
+                    <i class="fas fa-times"></i> 取消
+                </button>
+                <button class="output-btn btn-danger" onclick="confirmClearOutput()">
+                    <i class="fas fa-trash"></i> 确认清空
+                </button>
+            </div>
+        </div>
+    </div>
+
     <div class="container">
         <div class="header">
             <h1><i class="fas fa-code"></i> 测试脚本控制器</h1>
             <p>配置变量并运行自动化测试脚本</p>
         </div>
-        <div class="current-values-panel card">
-            <h3><i class="fas fa-info-circle"></i> 当前变量值</h3>
-            <div class="values-list">
-                {% for var in variables %}
-                <div class="value-item">
-                    <span class="value-name">{{ var.label }}:</span>
-                    <span class="value-content">{{ var.value if var.value else var.default }}</span>
-                </div>
-                {% endfor %}
-            </div>
-        </div>
         
         <div class="main-content">
+            <!-- 左侧变量配置部分保持不变 -->
             <div class="card">
                 <h2><i class="fas fa-sliders-h"></i> 变量配置</h2>
                 <form id="testForm" action="/run" method="POST">
                     {% for var in variables %}
-                    <div class="form-group">
+                    <div class="form-group" id="form-group-{{ var.name }}">
                         <label>
                             {{ var.label }}
                             {% if var.required %}<span class="required">*</span>{% endif %}
                         </label>
-                        {% if var.type == 'select' %}
-                        <select name="{{ var.name }}" {% if var.required %}required{% endif %}>
-                            {% for option in var.options %}
-                            <option value="{{ option.value }}" {% if var.value == option.value %}selected{% endif %}>
-                                {{ option.label }}
-                            </option>
-                            {% endfor %}
-                        </select>
-                        {% elif var.type == 'textarea' %}
-                        <textarea name="{{ var.name }}" rows="3" {% if var.required %}required{% endif %}>{{ var.value if var.value else var.default }}</textarea>
-                        {% else %}
                         <input type="{{ var.type }}" 
                             name="{{ var.name }}" 
+                            id="input-{{ var.name }}"
                             value="{{ var.value if var.value else var.default }}"
                             {% if var.required %}required{% endif %}
-                            placeholder="输入 {{ var.label }}">
-                        {% endif %}
+                            placeholder="输入 {{ var.label }}"
+                            {% if var.name == 'user_email' %}onfocus="handleEmailFocus()"{% endif %}
+                            {% if var.name == 'pay_type' %}onchange="handlePayTypeChange()"{% endif %}>
                         {% if var.description %}
                         <div class="help-text">{{ var.description }}</div>
+                        {% endif %}
+                        <!-- PayPal提示信息（初始隐藏） -->
+                        {% if var.name == 'user_email' %}
+                        <div class="paypal-hint" id="paypalHint">
+                            <i class="fas fa-info-circle"></i>
+                            <span>PayPal支付推荐使用测试邮箱：<span class="suggested-value">sx-duanjuceshi@personal.example.com</span></span>
+                        </div>
+                        <div class="field-hint" id="emailHint">
+                            <i class="fas fa-lightbulb"></i>
+                            <span>用于支付测试的用户邮箱</span>
+                        </div>
                         {% endif %}
                     </div>
                     {% endfor %}
@@ -505,96 +857,84 @@
                         </a>
                     </div>
                 </form>
-                
-                <div class="add-variable-form">
-                    <h3><i class="fas fa-plus-circle"></i> 添加新变量</h3>
-                    <form action="/add_variable" method="POST">
-                        <div class="form-row">
-                            <div>
-                                <label>变量名</label>
-                                <input type="text" name="name" required placeholder="如: custom_param">
-                            </div>
-                            <div>
-                                <label>显示标签</label>
-                                <input type="text" name="label" required placeholder="如: 自定义参数">
-                            </div>
-                        </div>
-                        
-                        <div class="form-row">
-                            <div>
-                                <label>类型</label>
-                                <select name="type">
-                                    <option value="text">文本</option>
-                                    <option value="number">数字</option>
-                                    <option value="email">邮箱</option>
-                                    <option value="password">密码</option>
-                                    <option value="textarea">多行文本</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label>默认值</label>
-                                <input type="text" name="default" placeholder="默认值">
-                            </div>
-                        </div>
-                        
-                        <div class="form-row">
-                            <div>
-                                <label>描述</label>
-                                <textarea name="description" rows="2" placeholder="变量描述"></textarea>
-                            </div>
-                            <div class="checkbox-group">
-                                <label>
-                                    <input type="checkbox" name="required" value="true">
-                                    必填
-                                </label>
-                            </div>
-                        </div>
-                        
-                        <button type="submit" class="btn btn-secondary">
-                            <i class="fas fa-plus"></i> 添加变量
-                        </button>
-                    </form>
-                </div>
             </div>
             
+            <!-- 右侧输出部分优化 -->
             <div class="card output-container">
-                <div class="output-controls">
-                    <button class="output-btn" onclick="clearOutput()">
-                        <i class="fas fa-trash"></i> 清空
-                    </button>
-                    <button class="output-btn" onclick="refreshOutput()">
-                        <i class="fas fa-sync"></i> 刷新
-                    </button>
-                    <button class="output-btn" onclick="toggleAutoScroll()" id="autoScrollBtn">
-                        <i class="fas fa-anchor"></i> 跟随滚动
-                    </button>
-                    <button class="output-btn" onclick="scrollToBottom()">
-                        <i class="fas fa-arrow-down"></i> 到底部
-                    </button>
-                    <button class="output-btn" onclick="scrollToTop()">
-                        <i class="fas fa-arrow-up"></i> 到顶部
-                    </button>
-                    <span class="output-info" id="outputInfo">就绪</span>
+                <div class="output-header">
+                    <h2><i class="fas fa-terminal"></i> 脚本输出</h2>
+                    <div class="output-controls">
+                        <button class="output-btn btn-success" onclick="refreshOutput()" title="刷新输出">
+                            <i class="fas fa-sync-alt"></i> 刷新
+                        </button>
+                        <button class="output-btn btn-warning" onclick="pauseAutoRefresh()" id="pauseBtn" title="暂停自动刷新">
+                            <i class="fas fa-pause"></i> 暂停
+                        </button>
+                        <button class="output-btn btn-danger" onclick="showConfirm()" title="清空所有输出">
+                            <i class="fas fa-trash"></i> 清空
+                        </button>
+                    </div>
                 </div>
-                <h2><i class="fas fa-terminal"></i> 脚本输出</h2>
-                <div id="output" onscroll="handleOutputScroll()">
+                
+                <!-- 过滤控件 -->
+                <div class="output-filters">
+                    <div class="filter-group">
+                        <label>日志级别:</label>
+                        <select class="filter-select" id="logLevelFilter" onchange="filterOutput()">
+                            <option value="all">全部</option>
+                            <option value="success">成功</option>
+                            <option value="info">信息</option>
+                            <option value="warning">警告</option>
+                            <option value="error">错误</option>
+                            <option value="debug">调试</option>
+                        </select>
+                    </div>
+                    <input type="text" class="search-input" id="searchFilter" 
+                           placeholder="搜索关键词..." oninput="filterOutput()">
+                </div>
+                
+                <!-- 信息栏 -->
+                <div class="output-info-bar">
+                    <div class="output-stats">
+                        <span id="lineCount">共 0 行</span>
+                        <span id="filteredCount">显示 0 行</span>
+                        <span id="lastUpdate">上次更新: --:--:--</span>
+                    </div>
+                    <div class="scroll-controls">
+                        <div class="scroll-mode">
+                            <span>自动滚动:</span>
+                            <label class="scroll-mode-toggle">
+                                <input type="checkbox" class="scroll-mode-checkbox" id="autoScrollToggle" checked>
+                                <span class="scroll-mode-slider"></span>
+                            </label>
+                        </div>
+                        <button class="scroll-btn" onclick="scrollToTop()" title="滚动到顶部">
+                            <i class="fas fa-chevron-up"></i>
+                        </button>
+                        <button class="scroll-btn" onclick="scrollToBottom()" title="滚动到底部">
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- 输出区域 -->
+                <div id="output" onscroll="handleScroll()">
                     {% for line in output %}
-                    <div class="log-line">{{ line }}</div>
+                    <div class="log-line info">{{ line }}</div>
                     {% endfor %}
                 </div>
+                
+                <!-- 浮动按钮 -->
+                <button class="scroll-top-btn" id="scrollTopBtn" onclick="scrollToTop()">
+                    <i class="fas fa-chevron-up"></i>
+                </button>
+                <button class="scroll-bottom-btn" id="scrollBottomBtn" onclick="scrollToBottom()">
+                    <i class="fas fa-chevron-down"></i>
+                </button>
             </div>
-            <!-- <div class="output-filter">
-                <select id="logLevelFilter" onchange="filterOutput()">
-                    <option value="all">全部日志</option>
-                    <option value="info">信息</option>
-                    <option value="success">成功</option>
-                    <option value="warning">警告</option>
-                    <option value="error">错误</option>
-                </select>
-                <input type="text" id="searchFilter" placeholder="过滤关键词..." oninput="filterOutput()">
-            </div> -->
         </div>
 
+        <!-- 底部状态栏保持不变 -->
         <div class="status-bar">
             <div class="status-indicator">
                 <div class="status-dot" id="statusDot"></div>
@@ -609,32 +949,356 @@
                 </a>
             </div>
         </div>
-        <div class="footer">
-            <p>测试脚本控制器 &copy; 2024 | 
-                <a href="#" onclick="showHelp()">帮助</a> | 
-                <a href="#" onclick="showAbout()">关于</a>
-            </p>
-        </div>
     </div>
 
     <script>
-        // 添加全局变量来管理滚动状态
-        let autoScrollEnabled = true;
+        // PayPal测试邮箱常量
+        const PAYPAL_TEST_EMAIL = 'sx-duanjuceshi@personal.example.com';
+        const DEFAULT_USER_EMAIL = '2985084405su@gmail.com';
+        
+        // PayPal支付类型
+        const PAYPAL_PROFILE_TYPE = 3;  // 个人中心PayPal
+        const PAYPAL_FORYOU_TYPE = 4;   // For You PayPal
+        
+        // 记录当前的支付类型
+        let currentPayType = null;
+                let autoScrollEnabled = true;
         let isScrollingProgrammatically = false;
         let lastScrollPosition = 0;
         let outputLines = [];
-        // 自动滚动到输出底部
+        let autoRefreshInterval = 3000; // 3秒刷新一次
+        let refreshInterval;
+        let filteredLines = [];
+        let lastLineCount = 0;
+        let isUserScrolling = false;
+        let scrollTimeout;
+        let currentSearch = '';
+        let currentLevel = 'all';
+        
+        // 处理支付类型变化
+        function handlePayTypeChange() {
+            const payTypeInput = document.getElementById('input-pay_type');
+            const emailInput = document.getElementById('input-user_email');
+            const paypalHint = document.getElementById('paypalHint');
+            const emailHint = document.getElementById('emailHint');
+            
+            if (!payTypeInput || !emailInput) return;
+            
+            const payType = parseInt(payTypeInput.value) || 0;
+            currentPayType = payType;
+            
+            const isPayPalType = (payType === PAYPAL_PROFILE_TYPE || payType === PAYPAL_FORYOU_TYPE);
+            
+            if (isPayPalType) {
+                // PayPal支付类型，显示推荐邮箱
+                if (paypalHint) {
+                    paypalHint.style.display = 'block';
+                }
+                
+                // 更新提示文本
+                if (emailHint) {
+                    const payTypeText = payType === PAYPAL_PROFILE_TYPE ? '个人中心PayPal' : 'For You PayPal';
+                    emailHint.innerHTML = `<i class="fas fa-lightbulb"></i><span>${payTypeText}支付推荐使用专用测试邮箱</span>`;
+                }
+                
+                // 设置输入框提示样式
+                emailInput.classList.add('paypal-email-input');
+                emailInput.placeholder = `建议使用 ${PAYPAL_TEST_EMAIL}`;
+                
+                // 如果当前邮箱是默认邮箱，自动替换为PayPal测试邮箱
+                if (emailInput.value === '' || emailInput.value === DEFAULT_USER_EMAIL) {
+                    emailInput.value = PAYPAL_TEST_EMAIL;
+                }
+                
+                // 显示建议使用PayPal测试邮箱的提示
+                showPayPalEmailSuggestion();
+            } else {
+                // 非PayPal支付类型
+                if (paypalHint) {
+                    paypalHint.style.display = 'none';
+                }
+                
+                // 恢复提示文本
+                if (emailHint) {
+                    emailHint.innerHTML = `<i class="fas fa-lightbulb"></i><span>用于支付测试的用户邮箱</span>`;
+                }
+                
+                // 移除输入框提示样式
+                emailInput.classList.remove('paypal-email-input');
+                emailInput.placeholder = '输入用户邮箱';
+                
+                // 如果当前邮箱是PayPal测试邮箱且为空或需要重置，恢复默认
+                if (emailInput.value === PAYPAL_TEST_EMAIL && emailInput.value.trim() === PAYPAL_TEST_EMAIL) {
+                    // 只有当邮箱完全是PayPal测试邮箱时才恢复默认
+                    emailInput.value = DEFAULT_USER_EMAIL;
+                }
+            }
+        }
+        
+        // 处理邮箱输入框获取焦点
+        function handleEmailFocus() {
+            const payTypeInput = document.getElementById('input-pay_type');
+            if (!payTypeInput) return;
+            
+            const payType = parseInt(payTypeInput.value) || 0;
+            const isPayPalType = (payType === PAYPAL_PROFILE_TYPE || payType === PAYPAL_FORYOU_TYPE);
+            
+            if (isPayPalType) {
+                // 如果当前是PayPal类型且邮箱为空或是默认值，显示建议
+                const emailInput = document.getElementById('input-user_email');
+                if (!emailInput) return;
+                
+                if (emailInput.value === '' || emailInput.value === DEFAULT_USER_EMAIL || emailInput.value === PAYPAL_TEST_EMAIL) {
+                    // 短暂显示建议值
+                    showPayPalEmailSuggestion();
+                }
+            }
+        }
+        
+        // 显示PayPal邮箱建议
+        function showPayPalEmailSuggestion() {
+            // 只在需要时显示，不干扰用户
+            setTimeout(() => {
+                const emailInput = document.getElementById('input-user_email');
+                if (!emailInput) return;
+                
+                // 检查是否已经在显示建议或用户正在输入
+                if (emailInput === document.activeElement) return;
+                
+                const currentValue = emailInput.value.trim();
+                if (currentValue === '' || currentValue === DEFAULT_USER_EMAIL) {
+                    // 显示建议但不自动填充
+                    showTempAlert(`建议使用PayPal测试邮箱: ${PAYPAL_TEST_EMAIL}`, 'info');
+                }
+            }, 500);
+        }
+        
+        // 显示临时提示
+        function showTempAlert(message, type = 'info') {
+            // 移除已存在的提示
+            const existingAlert = document.querySelector('.temp-alert');
+            if (existingAlert) {
+                existingAlert.remove();
+            }
+            
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `temp-alert alert-${type}`;
+            alertDiv.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                padding: 12px 20px;
+                border-radius: 4px;
+                background: ${type === 'warning' ? '#fff3cd' : '#d1ecf1'};
+                color: ${type === 'warning' ? '#856404' : '#0c5460'};
+                border: 1px solid ${type === 'warning' ? '#ffeaa7' : '#bee5eb'};
+                z-index: 9999;
+                box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+                animation: slideIn 0.3s ease-out;
+                max-width: 400px;
+            `;
+            
+            alertDiv.innerHTML = `
+                <i class="fas fa-${type === 'warning' ? 'exclamation-triangle' : 'info-circle'}" 
+                   style="margin-right: 8px;"></i>
+                ${message}
+            `;
+            
+            document.body.appendChild(alertDiv);
+            
+            // 5秒后自动消失
+            setTimeout(() => {
+                if (alertDiv.parentNode) {
+                    alertDiv.style.animation = 'slideOut 0.3s ease-out';
+                    setTimeout(() => {
+                        if (alertDiv.parentNode) {
+                            document.body.removeChild(alertDiv);
+                        }
+                    }, 300);
+                }
+            }, 5000);
+        }
+        
+        // 初始化支付类型检查
+        function initPayTypeCheck() {
+            const payTypeInput = document.getElementById('input-pay_type');
+            if (payTypeInput) {
+                // 触发一次初始检查
+                setTimeout(() => {
+                    handlePayTypeChange();
+                }, 100);
+            }
+        }
+        
+        // ==================== 表单处理 ====================
+        
+        // 表单提交前检查
+        document.getElementById('testForm')?.addEventListener('submit', function(e) {
+            const payTypeInput = document.getElementById('input-pay_type');
+            const emailInput = document.getElementById('input-user_email');
+            
+            if (!payTypeInput || !emailInput) return;
+            
+            const payType = parseInt(payTypeInput.value) || 0;
+            const isPayPalType = (payType === PAYPAL_PROFILE_TYPE || payType === PAYPAL_FORYOU_TYPE);
+            const userEmail = emailInput.value.trim();
+            
+            if (isPayPalType) {
+                // PayPal支付类型，检查邮箱
+                if (!userEmail) {
+                    e.preventDefault();
+                    showTempAlert('请输入PayPal测试邮箱', 'warning');
+                    emailInput.focus();
+                    return;
+                }
+                
+                // 如果不是推荐的测试邮箱，给出提示但不阻止提交
+                if (userEmail !== PAYPAL_TEST_EMAIL) {
+                    const confirmMsg = `您使用的是自定义邮箱 "${userEmail}"，PayPal支付推荐使用测试邮箱 "${PAYPAL_TEST_EMAIL}"，是否继续？`;
+                    if (!confirm(confirmMsg)) {
+                        e.preventDefault();
+                        return;
+                    }
+                }
+            }
+            
+            // 可以在这里添加其他表单验证逻辑
+            console.log('表单提交，支付类型：', payType, '邮箱：', userEmail);
+        });
+        
+        // ==================== 页面初始化 ====================
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            // 初始化支付类型检查
+            initPayTypeCheck();
+            
+            // 监听邮箱输入框的变化，提供实时反馈
+            const emailInput = document.getElementById('input-user_email');
+            if (emailInput) {
+                emailInput.addEventListener('input', function() {
+                    const payTypeInput = document.getElementById('input-pay_type');
+                    if (!payTypeInput) return;
+                    
+                    const payType = parseInt(payTypeInput.value) || 0;
+                    const isPayPalType = (payType === PAYPAL_PROFILE_TYPE || payType === PAYPAL_FORYOU_TYPE);
+                    
+                    if (isPayPalType) {
+                        const currentEmail = this.value.trim();
+                        if (currentEmail === PAYPAL_TEST_EMAIL) {
+                            // 用户输入了推荐的邮箱
+                            this.style.borderColor = '#48bb78';
+                            this.style.boxShadow = '0 0 0 3px rgba(72, 187, 120, 0.1)';
+                        } else {
+                            // 用户输入了其他邮箱
+                            this.style.borderColor = '#f39c12';
+                            this.style.boxShadow = '0 0 0 3px rgba(243, 156, 18, 0.1)';
+                        }
+                    }
+                });
+                
+                // 输入框失去焦点时恢复样式
+                emailInput.addEventListener('blur', function() {
+                    this.style.borderColor = '';
+                    this.style.boxShadow = '';
+                });
+            }
+            
+            // 添加CSS动画
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes slideIn {
+                    from { transform: translateX(100%); opacity: 0; }
+                    to { transform: translateX(0); opacity: 1; }
+                }
+                
+                @keyframes slideOut {
+                    from { transform: translateX(0); opacity: 1; }
+                    to { transform: translateX(100%); opacity: 0; }
+                }
+                
+                /* 邮箱输入框的过渡效果 */
+                input[type="text"] {
+                    transition: all 0.3s ease;
+                }
+                
+                /* 推荐邮箱的样式 */
+                .recommended-email {
+                    color: #0070ba;
+                    font-weight: 500;
+                }
+            `;
+            document.head.appendChild(style);
+        });
+        
+        // ==================== 辅助函数 ====================
+        
+        // 设置推荐值（但不强制）
+        function setSuggestedEmail() {
+            const emailInput = document.getElementById('input-user_email');
+            if (!emailInput) return;
+            
+            // 只在邮箱为空或是默认值时设置推荐值
+            const currentValue = emailInput.value.trim();
+            if (currentValue === '' || currentValue === DEFAULT_USER_EMAIL) {
+                emailInput.value = PAYPAL_TEST_EMAIL;
+                showTempAlert('已自动填充PayPal测试邮箱', 'info');
+            }
+        }
+        
+        // 一键使用推荐邮箱
+        function useRecommendedEmail() {
+            const emailInput = document.getElementById('input-user_email');
+            if (emailInput) {
+                emailInput.value = PAYPAL_TEST_EMAIL;
+                showTempAlert('已使用推荐PayPal测试邮箱', 'success');
+            }
+        }
+        
+        // 添加一个快速设置按钮到提示区域
+        function addQuickSetButton() {
+            const paypalHint = document.getElementById('paypalHint');
+            if (paypalHint) {
+                const quickBtn = document.createElement('button');
+                quickBtn.innerHTML = '<i class="fas fa-bolt"></i> 使用推荐邮箱';
+                quickBtn.style.cssText = `
+                    margin-left: 10px;
+                    padding: 4px 8px;
+                    background: #0070ba;
+                    color: white;
+                    border: none;
+                    border-radius: 3px;
+                    font-size: 12px;
+                    cursor: pointer;
+                    transition: background 0.3s;
+                `;
+                quickBtn.onmouseover = function() {
+                    this.style.background = '#005ea6';
+                };
+                quickBtn.onmouseout = function() {
+                    this.style.background = '#0070ba';
+                };
+                quickBtn.onclick = function(e) {
+                    e.preventDefault();
+                    useRecommendedEmail();
+                };
+                
+                paypalHint.appendChild(quickBtn);
+            }
+        }
+        
+        // 延迟添加快速设置按钮
+        setTimeout(addQuickSetButton, 1000);
+
+        
         function scrollToBottom() {
             const output = document.getElementById('output');
             output.scrollTop = output.scrollHeight;
         }
         
-        // 清空输出
         function clearOutput() {
             document.getElementById('output').innerHTML = '';
         }
         
-        // 刷新输出
         function refreshOutput() {
             fetch('/get_output')
                 .then(response => response.json())
@@ -647,9 +1311,7 @@
                 });
         }
         
-        // 更新状态指示器
         function updateStatus() {
-            // 这里可以添加实际的运行状态检测
             fetch('/get_output')
                 .then(response => response.json())
                 .then(data => {
@@ -666,29 +1328,24 @@
                 });
         }
         
-        // 页面加载完成后执行
         document.addEventListener('DOMContentLoaded', function() {
             scrollToBottom();
             
-            // 每5秒更新一次输出和状态
             setInterval(() => {
                 refreshOutput();
                 updateStatus();
             }, 5000);
         });
         
-        // 显示帮助
         function showHelp() {
-            alert('使用说明：\n1. 在左侧配置测试变量\n2. 点击"运行测试"开始执行\n3. 右侧查看实时输出\n4. 可以动态添加或移除变量');
+            alert('使用说明：\n1. 在左侧配置测试变量\n2. 点击"运行测试"开始执行\n3. 右侧查看实时输出');
         }
         
-        // 显示关于
         function showAbout() {
-            alert('测试脚本控制器 v1.0\n\n这是一个用于控制自动化测试脚本的Web界面，支持动态变量管理和实时输出监控。');
+            alert('测试脚本控制器 v1.0\n\n这是一个用于控制自动化测试脚本的Web界面，支持实时输出监控。');
         }
 
         function updateCurrentValues() {
-            // 获取表单中的所有输入值
             const form = document.getElementById('testForm');
             if (!form) return;
             
@@ -717,7 +1374,6 @@
             }
         }
 
-        // 监听表单输入变化
         document.addEventListener('DOMContentLoaded', function() {
             const form = document.getElementById('testForm');
             if (form) {
@@ -725,286 +1381,456 @@
                 form.addEventListener('change', updateCurrentValues);
             }
             
-            // 初始化显示
             updateCurrentValues();
         });
 
-        // 表单提交前验证
-        document.getElementById('testForm')?.addEventListener('submit', function(e) {
-            // 显示确认信息
-            const variables = [];
-            const inputs = this.querySelectorAll('input, select, textarea');
+        
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 初始化输出区域
+            outputLines = Array.from(document.querySelectorAll('#output .log-line')).map(line => ({
+                text: line.textContent,
+                element: line,
+                visible: true
+            }));
+            updateStats();
             
-            inputs.forEach(input => {
-                if (input.name) {
-                    variables.push(`${input.name}=${input.value}`);
-                }
+            // 设置自动刷新
+            startAutoRefresh();
+            
+            // 设置自动滚动开关
+            const autoScrollToggle = document.getElementById('autoScrollToggle');
+            autoScrollToggle.checked = autoScrollEnabled;
+            autoScrollToggle.addEventListener('change', function() {
+                autoScrollEnabled = this.checked;
+                saveUserPreference();
             });
             
-            console.log('提交的变量:', variables);
+            // 保存用户偏好
+            loadUserPreference();
         });
 
-        // 智能刷新输出（保持用户滚动位置）
-        function refreshOutput() {
-            if (isScrollingProgrammatically) return;
+        // 加载用户偏好
+        function loadUserPreference() {
+            const savedAutoScroll = localStorage.getItem('autoScrollEnabled');
+            const savedAutoRefresh = localStorage.getItem('autoRefreshEnabled');
+            const savedLevel = localStorage.getItem('logLevelFilter');
+            const savedSearch = localStorage.getItem('searchFilter');
             
-            // 保存当前的滚动位置和内容
-            const outputDiv = document.getElementById('output');
-            const currentScrollTop = outputDiv.scrollTop;
-            const currentHeight = outputDiv.scrollHeight;
+            if (savedAutoScroll !== null) {
+                autoScrollEnabled = savedAutoScroll === 'true';
+                document.getElementById('autoScrollToggle').checked = autoScrollEnabled;
+            }
+            
+            if (savedAutoRefresh !== null) {
+                autoRefreshEnabled = savedAutoRefresh === 'true';
+                document.getElementById('pauseBtn').innerHTML = autoRefreshEnabled ? 
+                    '<i class="fas fa-pause"></i> 暂停' : 
+                    '<i class="fas fa-play"></i> 继续';
+            }
+            
+            if (savedLevel) {
+                currentLevel = savedLevel;
+                document.getElementById('logLevelFilter').value = savedLevel;
+                filterOutput();
+            }
+            
+            if (savedSearch) {
+                currentSearch = savedSearch;
+                document.getElementById('searchFilter').value = savedSearch;
+                filterOutput();
+            }
+        }
+
+        // 保存用户偏好
+        function saveUserPreference() {
+            localStorage.setItem('autoScrollEnabled', autoScrollEnabled);
+            localStorage.setItem('autoRefreshEnabled', autoRefreshEnabled);
+            localStorage.setItem('logLevelFilter', currentLevel);
+            localStorage.setItem('searchFilter', currentSearch);
+        }
+
+        // 开始自动刷新
+        function startAutoRefresh() {
+            if (refreshInterval) {
+                clearInterval(refreshInterval);
+            }
+            refreshInterval = setInterval(refreshOutput, autoRefreshInterval);
+        }
+
+        // 暂停/继续自动刷新
+        function pauseAutoRefresh() {
+            autoRefreshEnabled = !autoRefreshEnabled;
+            const btn = document.getElementById('pauseBtn');
+            
+            if (autoRefreshEnabled) {
+                startAutoRefresh();
+                btn.innerHTML = '<i class="fas fa-pause"></i> 暂停';
+                btn.className = 'output-btn btn-warning';
+                btn.title = '暂停自动刷新';
+            } else {
+                clearInterval(refreshInterval);
+                btn.innerHTML = '<i class="fas fa-play"></i> 继续';
+                btn.className = 'output-btn btn-success';
+                btn.title = '继续自动刷新';
+            }
+            
+            saveUserPreference();
+        }
+
+        // 智能刷新输出
+        function refreshOutput() {
+            if (!autoRefreshEnabled) return;
             
             fetch('/get_output')
                 .then(response => response.json())
                 .then(data => {
                     if (data.output) {
                         const newLines = data.output.split('\n');
-                        const oldLineCount = outputLines.length;
-                        outputLines = newLines;
+                        const hasNewContent = newLines.length > outputLines.length;
                         
-                        // 更新显示
-                        updateOutputDisplay();
+                        // 保存当前滚动状态
+                        const outputDiv = document.getElementById('output');
+                        const wasNearBottom = isNearBottom(outputDiv);
                         
-                        // 检查是否有新内容
-                        const hasNewContent = newLines.length > oldLineCount;
+                        // 更新输出内容
+                        updateOutputContent(newLines);
                         
-                        // 智能滚动逻辑
-                        if (autoScrollEnabled) {
-                            if (hasNewContent) {
-                                // 有新内容时，如果用户已经在底部附近，就滚动到底部
-                                const scrollRemaining = currentHeight - currentScrollTop - outputDiv.clientHeight;
-                                if (scrollRemaining < 50) { // 在底部50像素内
-                                    scrollToBottom();
-                                }
+                        // 智能滚动
+                        if (hasNewContent) {
+                            if (autoScrollEnabled && wasNearBottom) {
+                                // 如果之前就在底部附近，就滚动到底部
+                                setTimeout(() => {
+                                    scrollToBottomSmooth();
+                                }, 100);
+                            } else if (!autoScrollEnabled) {
+                                // 如果用户暂停了自动滚动，标记新内容
+                                markNewLines(newLines.length - lastLineCount);
                             }
-                        } else {
-                            // 用户手动滚动时，保持当前位置
-                            setTimeout(() => {
-                                outputDiv.scrollTop = currentScrollTop + (outputDiv.scrollHeight - currentHeight);
-                            }, 10);
                         }
                         
-                        updateOutputInfo();
+                        // 更新最后更新时间
+                        updateLastUpdateTime();
+                        lastLineCount = newLines.length;
                     }
                 })
                 .catch(error => {
                     console.error('刷新输出失败:', error);
-                    document.getElementById('outputInfo').textContent = '刷新失败';
                 });
         }
 
-        // 更新输出显示（优化性能）
-        function updateOutputDisplay() {
+        // 更新输出内容
+        function updateOutputContent(newLines) {
             const outputDiv = document.getElementById('output');
             const fragment = document.createDocumentFragment();
             
-            outputLines.forEach((line, index) => {
+            // 清空现有内容
+            outputLines = [];
+            
+            // 创建新的内容
+            newLines.forEach((line, index) => {
                 const lineDiv = document.createElement('div');
-                lineDiv.className = 'log-line info';
+                lineDiv.className = 'log-line ' + getLineClass(line);
+                lineDiv.textContent = line;
+                lineDiv.dataset.index = index;
                 
-                // 分析日志类型并添加相应样式
-                if (line.includes('错误') || line.includes('错误') || line.includes('失败') || line.includes('ERROR') || line.includes('error')) {
-                    lineDiv.className = 'log-line error';
-                } else if (line.includes('成功') || line.includes('完成') || line.includes('SUCCESS') || line.includes('success')) {
-                    lineDiv.className = 'log-line success';
-                } else if (line.includes('警告') || line.includes('WARNING') || line.includes('warning')) {
-                    lineDiv.className = 'log-line warning';
-                } else if (line.includes('调试') || line.includes('DEBUG') || line.includes('debug')) {
-                    lineDiv.className = 'log-line debug';
-                }
-                
-                // 添加时间戳（如果有）
+                // 处理时间戳
                 const timestampMatch = line.match(/(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})/);
                 if (timestampMatch) {
-                    const timestamp = document.createElement('span');
-                    timestamp.className = 'timestamp';
-                    timestamp.textContent = timestampMatch[0];
-                    lineDiv.appendChild(timestamp);
+                    const timestampSpan = document.createElement('span');
+                    timestampSpan.className = 'timestamp';
+                    timestampSpan.textContent = timestampMatch[0];
+                    lineDiv.innerHTML = '';
+                    lineDiv.appendChild(timestampSpan);
                     lineDiv.appendChild(document.createTextNode(line.replace(timestampMatch[0], '')));
-                } else {
-                    lineDiv.textContent = line;
                 }
                 
                 fragment.appendChild(lineDiv);
+                outputLines.push({
+                    text: line,
+                    element: lineDiv,
+                    visible: true
+                });
             });
             
-            // 使用replaceChildren提高性能
-            outputDiv.replaceChildren(fragment);
+            outputDiv.innerHTML = '';
+            outputDiv.appendChild(fragment);
+            
+            // 重新应用过滤
+            applyFilters();
+            updateStats();
+        }
+
+        // 获取日志行样式类
+        function getLineClass(line) {
+            if (line.includes('错误') || line.includes('失败') || line.includes('ERROR') || line.includes('error')) {
+                return 'error';
+            } else if (line.includes('成功') || line.includes('完成') || line.includes('SUCCESS') || line.includes('success')) {
+                return 'success';
+            } else if (line.includes('警告') || line.includes('WARNING') || line.includes('warning')) {
+                return 'warning';
+            } else if (line.includes('调试') || line.includes('DEBUG') || line.includes('debug')) {
+                return 'debug';
+            } else {
+                return 'info';
+            }
+        }
+
+        // 标记新行
+        function markNewLines(count) {
+            if (count <= 0) return;
+            
+            const outputDiv = document.getElementById('output');
+            const startIndex = Math.max(0, outputLines.length - count);
+            
+            for (let i = startIndex; i < outputLines.length; i++) {
+                if (outputLines[i] && outputLines[i].element) {
+                    outputLines[i].element.classList.add('new-line-indicator');
+                }
+            }
+            
+            // 移除标记
+            setTimeout(() => {
+                for (let i = startIndex; i < outputLines.length; i++) {
+                    if (outputLines[i] && outputLines[i].element) {
+                        outputLines[i].element.classList.remove('new-line-indicator');
+                    }
+                }
+            }, 2000);
+        }
+
+        // 检查是否在底部附近
+        function isNearBottom(element) {
+            const threshold = 100; // 距离底部100像素以内算"附近"
+            const distance = element.scrollHeight - element.scrollTop - element.clientHeight;
+            return distance <= threshold;
+        }
+
+        // 平滑滚动到底部
+        function scrollToBottomSmooth() {
+            const outputDiv = document.getElementById('output');
+            outputDiv.scrollTo({
+                top: outputDiv.scrollHeight,
+                behavior: 'smooth'
+            });
         }
 
         // 滚动到顶部
         function scrollToTop() {
             const outputDiv = document.getElementById('output');
-            isScrollingProgrammatically = true;
-            outputDiv.scrollTop = 0;
-            setTimeout(() => {
-                isScrollingProgrammatically = false;
-            }, 100);
+            outputDiv.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
         }
 
         // 滚动到底部
         function scrollToBottom() {
             const outputDiv = document.getElementById('output');
-            isScrollingProgrammatically = true;
-            outputDiv.scrollTop = outputDiv.scrollHeight;
-            setTimeout(() => {
-                isScrollingProgrammatically = false;
-            }, 100);
-            document.getElementById('outputInfo').textContent = '已滚动到底部';
-        }
-
-        // 切换自动滚动
-        function toggleAutoScroll() {
-            autoScrollEnabled = !autoScrollEnabled;
-            const btn = document.getElementById('autoScrollBtn');
-            const icon = btn.querySelector('i');
-            
-            if (autoScrollEnabled) {
-                btn.style.background = '#48bb78';
-                icon.className = 'fas fa-anchor';
-                document.getElementById('outputInfo').textContent = '自动滚动已启用';
-            } else {
-                btn.style.background = '#e53e3e';
-                icon.className = 'fas fa-anchor';
-                document.getElementById('outputInfo').textContent = '自动滚动已禁用';
-            }
-        }
-
-        // 处理输出区域滚动事件
-        function handleOutputScroll() {
-            if (isScrollingProgrammatically) return;
-            
-            const outputDiv = document.getElementById('output');
-            const scrollRemaining = outputDiv.scrollHeight - outputDiv.scrollTop - outputDiv.clientHeight;
-            
-            // 如果用户手动滚动到底部附近，自动启用自动滚动
-            if (scrollRemaining < 20) {
-                if (!autoScrollEnabled) {
-                    autoScrollEnabled = true;
-                    const btn = document.getElementById('autoScrollBtn');
-                    btn.style.background = '#48bb78';
-                    document.getElementById('outputInfo').textContent = '自动滚动已启用';
-                }
-            } else if (scrollRemaining > 50) {
-                // 如果用户向上滚动，禁用自动滚动
-                if (autoScrollEnabled) {
-                    autoScrollEnabled = false;
-                    const btn = document.getElementById('autoScrollBtn');
-                    btn.style.background = '#e53e3e';
-                    document.getElementById('outputInfo').textContent = '自动滚动已禁用';
-                }
-            }
-        }
-
-        // 更新输出信息
-        function updateOutputInfo() {
-            const infoDiv = document.getElementById('outputInfo');
-            const lineCount = outputLines.length;
-            
-            let info = `共 ${lineCount} 行`;
-            if (!autoScrollEnabled) {
-                info += ' | 手动滚动';
-            }
-            
-            infoDiv.textContent = info;
-        }
-
-        // 清空输出
-        function clearOutput() {
-            if (confirm('确定要清空所有输出内容吗？')) {
-                fetch('/clear_output', { method: 'POST' })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            outputLines = [];
-                            updateOutputDisplay();
-                            document.getElementById('outputInfo').textContent = '输出已清空';
-                        }
-                    });
-            }
-        }
-
-        // 添加搜索功能
-        function searchOutput() {
-            const searchTerm = prompt('请输入要搜索的关键词:');
-            if (searchTerm) {
-                const outputDiv = document.getElementById('output');
-                const content = outputDiv.innerHTML;
-                const regex = new RegExp(`(${searchTerm})`, 'gi');
-                const highlighted = content.replace(regex, '<span class="highlight">$1</span>');
-                outputDiv.innerHTML = highlighted;
-                document.getElementById('outputInfo').textContent = `已搜索: ${searchTerm}`;
-            }
-        }
-
-        // 添加搜索按钮到控制栏
-        function addSearchButton() {
-            const controls = document.querySelector('.output-controls');
-            const searchBtn = document.createElement('button');
-            searchBtn.className = 'output-btn';
-            searchBtn.onclick = searchOutput;
-            searchBtn.innerHTML = '<i class="fas fa-search"></i> 搜索';
-            controls.insertBefore(searchBtn, document.querySelector('.output-info'));
-        }
-
-        // 页面加载完成后执行
-        document.addEventListener('DOMContentLoaded', function() {
-            // 初始化输出
-            outputLines = Array.from(document.querySelectorAll('#output .log-line')).map(line => line.textContent);
-            updateOutputInfo();
-            
-            // 添加搜索按钮
-            addSearchButton();
-            
-            // 每5秒更新一次输出，但使用智能刷新
-            setInterval(refreshOutput, 5000);
-            
-            // 监听键盘快捷键
-            document.addEventListener('keydown', function(e) {
-                const outputDiv = document.getElementById('output');
-                if (outputDiv && document.activeElement !== outputDiv) {
-                    if (e.key === 'F5') {
-                        e.preventDefault();
-                        refreshOutput();
-                    } else if (e.key === 'Home' && e.ctrlKey) {
-                        e.preventDefault();
-                        scrollToTop();
-                    } else if (e.key === 'End' && e.ctrlKey) {
-                        e.preventDefault();
-                        scrollToBottom();
-                    } else if (e.key === ' ' && e.ctrlKey) {
-                        e.preventDefault();
-                        toggleAutoScroll();
-                    }
-                }
+            outputDiv.scrollTo({
+                top: outputDiv.scrollHeight,
+                behavior: 'smooth'
             });
-        });
+        }
 
-        // 添加过滤功能
+        // 处理滚动事件
+        function handleScroll() {
+            const outputDiv = document.getElementById('output');
+            const scrollTopBtn = document.getElementById('scrollTopBtn');
+            const scrollBottomBtn = document.getElementById('scrollBottomBtn');
+            
+            // 显示/隐藏浮动按钮
+            if (outputDiv.scrollTop > 100) {
+                scrollTopBtn.style.display = 'flex';
+            } else {
+                scrollTopBtn.style.display = 'none';
+            }
+            
+            const distanceFromBottom = outputDiv.scrollHeight - outputDiv.scrollTop - outputDiv.clientHeight;
+            if (distanceFromBottom > 100) {
+                scrollBottomBtn.style.display = 'flex';
+            } else {
+                scrollBottomBtn.style.display = 'none';
+            }
+            
+            // 检测用户滚动
+            isUserScrolling = true;
+            
+            // 清除之前的定时器
+            if (scrollTimeout) {
+                clearTimeout(scrollTimeout);
+            }
+            
+            // 设置新的定时器
+            scrollTimeout = setTimeout(() => {
+                isUserScrolling = false;
+            }, 200);
+        }
+
+        // 过滤输出
         function filterOutput() {
             const levelFilter = document.getElementById('logLevelFilter').value;
             const searchFilter = document.getElementById('searchFilter').value.toLowerCase();
-            const logLines = document.querySelectorAll('#output .log-line');
             
-            logLines.forEach(line => {
-                const lineText = line.textContent.toLowerCase();
-                const lineLevel = line.className.replace('log-line ', '');
+            currentLevel = levelFilter;
+            currentSearch = searchFilter;
+            
+            applyFilters();
+            saveUserPreference();
+        }
+
+        // 应用过滤
+        function applyFilters() {
+            let visibleCount = 0;
+            
+            outputLines.forEach((lineObj, index) => {
+                const line = lineObj.text.toLowerCase();
+                const lineClass = getLineClass(lineObj.text);
                 let shouldShow = true;
                 
                 // 按级别过滤
-                if (levelFilter !== 'all' && !lineLevel.includes(levelFilter)) {
+                if (currentLevel !== 'all' && lineClass !== currentLevel) {
                     shouldShow = false;
                 }
                 
                 // 按关键词过滤
-                if (searchFilter && !lineText.includes(searchFilter)) {
+                if (currentSearch && !line.includes(currentSearch)) {
                     shouldShow = false;
                 }
                 
-                line.style.display = shouldShow ? '' : 'none';
+                // 应用可见性
+                if (lineObj.element) {
+                    lineObj.element.style.display = shouldShow ? '' : 'none';
+                    lineObj.visible = shouldShow;
+                }
+                
+                if (shouldShow) visibleCount++;
             });
             
-            updateOutputInfo();
+            // 高亮搜索关键词
+            if (currentSearch) {
+                highlightSearch(currentSearch);
+            }
+            
+            filteredLines = visibleCount;
+            updateStats();
         }
+
+        // 高亮搜索关键词
+        function highlightSearch(searchTerm) {
+            const outputDiv = document.getElementById('output');
+            const regex = new RegExp(`(${searchTerm})`, 'gi');
+            
+            outputLines.forEach(lineObj => {
+                if (lineObj.element && lineObj.visible) {
+                    const originalHTML = lineObj.element.innerHTML;
+                    const highlighted = originalHTML.replace(regex, '<span class="highlight">$1</span>');
+                    if (highlighted !== originalHTML) {
+                        lineObj.element.innerHTML = highlighted;
+                    }
+                }
+            });
+        }
+
+        // 更新统计信息
+        function updateStats() {
+            const totalLines = outputLines.length;
+            const visibleLines = filteredLines || totalLines;
+            
+            document.getElementById('lineCount').textContent = `共 ${totalLines} 行`;
+            document.getElementById('filteredCount').textContent = `显示 ${visibleLines} 行`;
+        }
+
+        // 更新最后更新时间
+        function updateLastUpdateTime() {
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString('zh-CN', { 
+                hour12: false,
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
+            document.getElementById('lastUpdate').textContent = `上次更新: ${timeStr}`;
+        }
+
+        // 显示清空确认
+        function showConfirm() {
+            document.getElementById('confirmOverlay').style.display = 'flex';
+        }
+
+        // 隐藏清空确认
+        function hideConfirm() {
+            document.getElementById('confirmOverlay').style.display = 'none';
+        }
+
+        // 确认清空输出
+        function confirmClearOutput() {
+            fetch('/clear_output', { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        outputLines = [];
+                        document.getElementById('output').innerHTML = '';
+                        updateStats();
+                        hideConfirm();
+                    }
+                });
+        }
+
+        // 键盘快捷键
+        document.addEventListener('keydown', function(e) {
+            const outputDiv = document.getElementById('output');
+            if (!outputDiv) return;
+            
+            // 检查是否在输入框中
+            const activeElement = document.activeElement;
+            const isInInput = activeElement && (
+                activeElement.tagName === 'INPUT' || 
+                activeElement.tagName === 'TEXTAREA' || 
+                activeElement.isContentEditable
+            );
+            
+            if (isInInput) return;
+            
+            switch(e.key) {
+                case 'F5':
+                    e.preventDefault();
+                    refreshOutput();
+                    break;
+                case 'Home':
+                    if (e.ctrlKey) {
+                        e.preventDefault();
+                        scrollToTop();
+                    }
+                    break;
+                case 'End':
+                    if (e.ctrlKey) {
+                        e.preventDefault();
+                        scrollToBottom();
+                    }
+                    break;
+                case ' ':
+                    if (e.ctrlKey) {
+                        e.preventDefault();
+                        document.getElementById('autoScrollToggle').click();
+                    }
+                    break;
+                case 'r':
+                case 'R':
+                    if (e.ctrlKey) {
+                        e.preventDefault();
+                        pauseAutoRefresh();
+                    }
+                    break;
+                case 'Delete':
+                    if (e.ctrlKey) {
+                        e.preventDefault();
+                        showConfirm();
+                    }
+                    break;
+            }
+        });
     </script>
 </body>
 </html>
