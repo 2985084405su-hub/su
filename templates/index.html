@@ -320,6 +320,129 @@
         .footer a:hover {
             text-decoration: underline;
         }
+        .current-values-panel {
+            margin-bottom: 20px;
+            background: #f8f9fa;
+        }
+
+        .values-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 10px;
+        }
+
+        .value-item {
+            padding: 8px 12px;
+            background: white;
+            border-radius: 5px;
+            border-left: 3px solid #667eea;
+        }
+
+        .value-name {
+            font-weight: bold;
+            color: #555;
+            margin-right: 10px;
+        }
+
+        .value-content {
+            color: #333;
+            font-family: monospace;
+        }
+
+        .output-info {
+            color: #888;
+            font-size: 12px;
+            margin-left: 10px;
+            font-style: italic;
+        }
+
+        .output-controls {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            flex-wrap: wrap;
+            margin-bottom: 10px;
+        }
+
+        #output {
+            background: #1a202c;
+            color: #cbd5e0;
+            padding: 15px;
+            border-radius: 5px;
+            min-height: 400px;
+            max-height: 500px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            white-space: pre-wrap;
+            line-height: 1.4;
+            transition: all 0.3s;
+        }
+
+        .log-line {
+            margin-bottom: 2px;
+            padding: 2px 5px;
+            border-radius: 2px;
+        }
+
+        .log-line:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        /* 不同类型日志的样式 */
+        .log-line.info {
+            color: #cbd5e0;
+        }
+
+        .log-line.success {
+            color: #68d391;
+        }
+
+        .log-line.error {
+            color: #fc8181;
+        }
+
+        .log-line.warning {
+            color: #f6ad55;
+        }
+
+        .log-line.debug {
+            color: #63b3ed;
+            opacity: 0.8;
+        }
+
+        /* 时间戳样式 */
+        .timestamp {
+            color: #718096;
+            font-size: 12px;
+            margin-right: 10px;
+        }
+
+        /* 高亮搜索到的文本 */
+        .highlight {
+            background-color: #f6e05e;
+            color: #1a202c;
+            padding: 0 2px;
+            border-radius: 2px;
+        }
+
+        .output-filter {
+            display: flex;
+            gap: 10px;
+            margin: 10px 0;
+        }
+
+        .output-filter select,
+        .output-filter input {
+            padding: 5px 10px;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+            background: white;
+        }
+
+        .output-filter input {
+            flex-grow: 1;
+        }
     </style>
 </head>
 <body>
@@ -327,6 +450,17 @@
         <div class="header">
             <h1><i class="fas fa-code"></i> 测试脚本控制器</h1>
             <p>配置变量并运行自动化测试脚本</p>
+        </div>
+        <div class="current-values-panel card">
+            <h3><i class="fas fa-info-circle"></i> 当前变量值</h3>
+            <div class="values-list">
+                {% for var in variables %}
+                <div class="value-item">
+                    <span class="value-name">{{ var.label }}:</span>
+                    <span class="value-content">{{ var.value if var.value else var.default }}</span>
+                </div>
+                {% endfor %}
+            </div>
         </div>
         
         <div class="main-content">
@@ -342,19 +476,19 @@
                         {% if var.type == 'select' %}
                         <select name="{{ var.name }}" {% if var.required %}required{% endif %}>
                             {% for option in var.options %}
-                            <option value="{{ option.value }}" {% if var.default == option.value %}selected{% endif %}>
+                            <option value="{{ option.value }}" {% if var.value == option.value %}selected{% endif %}>
                                 {{ option.label }}
                             </option>
                             {% endfor %}
                         </select>
                         {% elif var.type == 'textarea' %}
-                        <textarea name="{{ var.name }}" rows="3" {% if var.required %}required{% endif %}>{{ var.default }}</textarea>
+                        <textarea name="{{ var.name }}" rows="3" {% if var.required %}required{% endif %}>{{ var.value if var.value else var.default }}</textarea>
                         {% else %}
                         <input type="{{ var.type }}" 
-                               name="{{ var.name }}" 
-                               value="{{ var.default }}"
-                               {% if var.required %}required{% endif %}
-                               placeholder="输入 {{ var.label }}">
+                            name="{{ var.name }}" 
+                            value="{{ var.value if var.value else var.default }}"
+                            {% if var.required %}required{% endif %}
+                            placeholder="输入 {{ var.label }}">
                         {% endif %}
                         {% if var.description %}
                         <div class="help-text">{{ var.description }}</div>
@@ -431,28 +565,50 @@
                     <button class="output-btn" onclick="refreshOutput()">
                         <i class="fas fa-sync"></i> 刷新
                     </button>
+                    <button class="output-btn" onclick="toggleAutoScroll()" id="autoScrollBtn">
+                        <i class="fas fa-anchor"></i> 跟随滚动
+                    </button>
+                    <button class="output-btn" onclick="scrollToBottom()">
+                        <i class="fas fa-arrow-down"></i> 到底部
+                    </button>
+                    <button class="output-btn" onclick="scrollToTop()">
+                        <i class="fas fa-arrow-up"></i> 到顶部
+                    </button>
+                    <span class="output-info" id="outputInfo">就绪</span>
                 </div>
                 <h2><i class="fas fa-terminal"></i> 脚本输出</h2>
-                <div id="output">
+                <div id="output" onscroll="handleOutputScroll()">
                     {% for line in output %}
                     <div class="log-line">{{ line }}</div>
                     {% endfor %}
                 </div>
             </div>
+            <!-- <div class="output-filter">
+                <select id="logLevelFilter" onchange="filterOutput()">
+                    <option value="all">全部日志</option>
+                    <option value="info">信息</option>
+                    <option value="success">成功</option>
+                    <option value="warning">警告</option>
+                    <option value="error">错误</option>
+                </select>
+                <input type="text" id="searchFilter" placeholder="过滤关键词..." oninput="filterOutput()">
+            </div> -->
         </div>
-        
+
         <div class="status-bar">
             <div class="status-indicator">
                 <div class="status-dot" id="statusDot"></div>
                 <span id="statusText">就绪</span>
             </div>
-            <div>
-                <a href="/reset_variables" class="btn btn-warning">
+            <div class="status-buttons">
+                <a href="/reset_values" class="btn btn-warning btn-sm">
+                    <i class="fas fa-eraser"></i> 清除用户值
+                </a>
+                <a href="/reset_variables" class="btn btn-warning btn-sm">
                     <i class="fas fa-redo"></i> 重置变量
                 </a>
             </div>
         </div>
-        
         <div class="footer">
             <p>测试脚本控制器 &copy; 2024 | 
                 <a href="#" onclick="showHelp()">帮助</a> | 
@@ -462,6 +618,11 @@
     </div>
 
     <script>
+        // 添加全局变量来管理滚动状态
+        let autoScrollEnabled = true;
+        let isScrollingProgrammatically = false;
+        let lastScrollPosition = 0;
+        let outputLines = [];
         // 自动滚动到输出底部
         function scrollToBottom() {
             const output = document.getElementById('output');
@@ -524,6 +685,325 @@
         // 显示关于
         function showAbout() {
             alert('测试脚本控制器 v1.0\n\n这是一个用于控制自动化测试脚本的Web界面，支持动态变量管理和实时输出监控。');
+        }
+
+        function updateCurrentValues() {
+            // 获取表单中的所有输入值
+            const form = document.getElementById('testForm');
+            if (!form) return;
+            
+            const inputs = form.querySelectorAll('input, select, textarea');
+            const valuesPanel = document.querySelector('.values-list');
+            
+            if (valuesPanel) {
+                let html = '';
+                inputs.forEach(input => {
+                    const label = input.labels?.[0]?.textContent || input.name;
+                    let value = input.value;
+                    
+                    if (input.type === 'checkbox' || input.type === 'radio') {
+                        value = input.checked ? input.value : '';
+                    }
+                    
+                    if (label && label !== '*') {
+                        html += `
+                        <div class="value-item">
+                            <span class="value-name">${label.replace('*', '').trim()}:</span>
+                            <span class="value-content">${value || '(空)'}</span>
+                        </div>`;
+                    }
+                });
+                valuesPanel.innerHTML = html;
+            }
+        }
+
+        // 监听表单输入变化
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('testForm');
+            if (form) {
+                form.addEventListener('input', updateCurrentValues);
+                form.addEventListener('change', updateCurrentValues);
+            }
+            
+            // 初始化显示
+            updateCurrentValues();
+        });
+
+        // 表单提交前验证
+        document.getElementById('testForm')?.addEventListener('submit', function(e) {
+            // 显示确认信息
+            const variables = [];
+            const inputs = this.querySelectorAll('input, select, textarea');
+            
+            inputs.forEach(input => {
+                if (input.name) {
+                    variables.push(`${input.name}=${input.value}`);
+                }
+            });
+            
+            console.log('提交的变量:', variables);
+        });
+
+        // 智能刷新输出（保持用户滚动位置）
+        function refreshOutput() {
+            if (isScrollingProgrammatically) return;
+            
+            // 保存当前的滚动位置和内容
+            const outputDiv = document.getElementById('output');
+            const currentScrollTop = outputDiv.scrollTop;
+            const currentHeight = outputDiv.scrollHeight;
+            
+            fetch('/get_output')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.output) {
+                        const newLines = data.output.split('\n');
+                        const oldLineCount = outputLines.length;
+                        outputLines = newLines;
+                        
+                        // 更新显示
+                        updateOutputDisplay();
+                        
+                        // 检查是否有新内容
+                        const hasNewContent = newLines.length > oldLineCount;
+                        
+                        // 智能滚动逻辑
+                        if (autoScrollEnabled) {
+                            if (hasNewContent) {
+                                // 有新内容时，如果用户已经在底部附近，就滚动到底部
+                                const scrollRemaining = currentHeight - currentScrollTop - outputDiv.clientHeight;
+                                if (scrollRemaining < 50) { // 在底部50像素内
+                                    scrollToBottom();
+                                }
+                            }
+                        } else {
+                            // 用户手动滚动时，保持当前位置
+                            setTimeout(() => {
+                                outputDiv.scrollTop = currentScrollTop + (outputDiv.scrollHeight - currentHeight);
+                            }, 10);
+                        }
+                        
+                        updateOutputInfo();
+                    }
+                })
+                .catch(error => {
+                    console.error('刷新输出失败:', error);
+                    document.getElementById('outputInfo').textContent = '刷新失败';
+                });
+        }
+
+        // 更新输出显示（优化性能）
+        function updateOutputDisplay() {
+            const outputDiv = document.getElementById('output');
+            const fragment = document.createDocumentFragment();
+            
+            outputLines.forEach((line, index) => {
+                const lineDiv = document.createElement('div');
+                lineDiv.className = 'log-line info';
+                
+                // 分析日志类型并添加相应样式
+                if (line.includes('错误') || line.includes('错误') || line.includes('失败') || line.includes('ERROR') || line.includes('error')) {
+                    lineDiv.className = 'log-line error';
+                } else if (line.includes('成功') || line.includes('完成') || line.includes('SUCCESS') || line.includes('success')) {
+                    lineDiv.className = 'log-line success';
+                } else if (line.includes('警告') || line.includes('WARNING') || line.includes('warning')) {
+                    lineDiv.className = 'log-line warning';
+                } else if (line.includes('调试') || line.includes('DEBUG') || line.includes('debug')) {
+                    lineDiv.className = 'log-line debug';
+                }
+                
+                // 添加时间戳（如果有）
+                const timestampMatch = line.match(/(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})/);
+                if (timestampMatch) {
+                    const timestamp = document.createElement('span');
+                    timestamp.className = 'timestamp';
+                    timestamp.textContent = timestampMatch[0];
+                    lineDiv.appendChild(timestamp);
+                    lineDiv.appendChild(document.createTextNode(line.replace(timestampMatch[0], '')));
+                } else {
+                    lineDiv.textContent = line;
+                }
+                
+                fragment.appendChild(lineDiv);
+            });
+            
+            // 使用replaceChildren提高性能
+            outputDiv.replaceChildren(fragment);
+        }
+
+        // 滚动到顶部
+        function scrollToTop() {
+            const outputDiv = document.getElementById('output');
+            isScrollingProgrammatically = true;
+            outputDiv.scrollTop = 0;
+            setTimeout(() => {
+                isScrollingProgrammatically = false;
+            }, 100);
+        }
+
+        // 滚动到底部
+        function scrollToBottom() {
+            const outputDiv = document.getElementById('output');
+            isScrollingProgrammatically = true;
+            outputDiv.scrollTop = outputDiv.scrollHeight;
+            setTimeout(() => {
+                isScrollingProgrammatically = false;
+            }, 100);
+            document.getElementById('outputInfo').textContent = '已滚动到底部';
+        }
+
+        // 切换自动滚动
+        function toggleAutoScroll() {
+            autoScrollEnabled = !autoScrollEnabled;
+            const btn = document.getElementById('autoScrollBtn');
+            const icon = btn.querySelector('i');
+            
+            if (autoScrollEnabled) {
+                btn.style.background = '#48bb78';
+                icon.className = 'fas fa-anchor';
+                document.getElementById('outputInfo').textContent = '自动滚动已启用';
+            } else {
+                btn.style.background = '#e53e3e';
+                icon.className = 'fas fa-anchor';
+                document.getElementById('outputInfo').textContent = '自动滚动已禁用';
+            }
+        }
+
+        // 处理输出区域滚动事件
+        function handleOutputScroll() {
+            if (isScrollingProgrammatically) return;
+            
+            const outputDiv = document.getElementById('output');
+            const scrollRemaining = outputDiv.scrollHeight - outputDiv.scrollTop - outputDiv.clientHeight;
+            
+            // 如果用户手动滚动到底部附近，自动启用自动滚动
+            if (scrollRemaining < 20) {
+                if (!autoScrollEnabled) {
+                    autoScrollEnabled = true;
+                    const btn = document.getElementById('autoScrollBtn');
+                    btn.style.background = '#48bb78';
+                    document.getElementById('outputInfo').textContent = '自动滚动已启用';
+                }
+            } else if (scrollRemaining > 50) {
+                // 如果用户向上滚动，禁用自动滚动
+                if (autoScrollEnabled) {
+                    autoScrollEnabled = false;
+                    const btn = document.getElementById('autoScrollBtn');
+                    btn.style.background = '#e53e3e';
+                    document.getElementById('outputInfo').textContent = '自动滚动已禁用';
+                }
+            }
+        }
+
+        // 更新输出信息
+        function updateOutputInfo() {
+            const infoDiv = document.getElementById('outputInfo');
+            const lineCount = outputLines.length;
+            
+            let info = `共 ${lineCount} 行`;
+            if (!autoScrollEnabled) {
+                info += ' | 手动滚动';
+            }
+            
+            infoDiv.textContent = info;
+        }
+
+        // 清空输出
+        function clearOutput() {
+            if (confirm('确定要清空所有输出内容吗？')) {
+                fetch('/clear_output', { method: 'POST' })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            outputLines = [];
+                            updateOutputDisplay();
+                            document.getElementById('outputInfo').textContent = '输出已清空';
+                        }
+                    });
+            }
+        }
+
+        // 添加搜索功能
+        function searchOutput() {
+            const searchTerm = prompt('请输入要搜索的关键词:');
+            if (searchTerm) {
+                const outputDiv = document.getElementById('output');
+                const content = outputDiv.innerHTML;
+                const regex = new RegExp(`(${searchTerm})`, 'gi');
+                const highlighted = content.replace(regex, '<span class="highlight">$1</span>');
+                outputDiv.innerHTML = highlighted;
+                document.getElementById('outputInfo').textContent = `已搜索: ${searchTerm}`;
+            }
+        }
+
+        // 添加搜索按钮到控制栏
+        function addSearchButton() {
+            const controls = document.querySelector('.output-controls');
+            const searchBtn = document.createElement('button');
+            searchBtn.className = 'output-btn';
+            searchBtn.onclick = searchOutput;
+            searchBtn.innerHTML = '<i class="fas fa-search"></i> 搜索';
+            controls.insertBefore(searchBtn, document.querySelector('.output-info'));
+        }
+
+        // 页面加载完成后执行
+        document.addEventListener('DOMContentLoaded', function() {
+            // 初始化输出
+            outputLines = Array.from(document.querySelectorAll('#output .log-line')).map(line => line.textContent);
+            updateOutputInfo();
+            
+            // 添加搜索按钮
+            addSearchButton();
+            
+            // 每5秒更新一次输出，但使用智能刷新
+            setInterval(refreshOutput, 5000);
+            
+            // 监听键盘快捷键
+            document.addEventListener('keydown', function(e) {
+                const outputDiv = document.getElementById('output');
+                if (outputDiv && document.activeElement !== outputDiv) {
+                    if (e.key === 'F5') {
+                        e.preventDefault();
+                        refreshOutput();
+                    } else if (e.key === 'Home' && e.ctrlKey) {
+                        e.preventDefault();
+                        scrollToTop();
+                    } else if (e.key === 'End' && e.ctrlKey) {
+                        e.preventDefault();
+                        scrollToBottom();
+                    } else if (e.key === ' ' && e.ctrlKey) {
+                        e.preventDefault();
+                        toggleAutoScroll();
+                    }
+                }
+            });
+        });
+
+        // 添加过滤功能
+        function filterOutput() {
+            const levelFilter = document.getElementById('logLevelFilter').value;
+            const searchFilter = document.getElementById('searchFilter').value.toLowerCase();
+            const logLines = document.querySelectorAll('#output .log-line');
+            
+            logLines.forEach(line => {
+                const lineText = line.textContent.toLowerCase();
+                const lineLevel = line.className.replace('log-line ', '');
+                let shouldShow = true;
+                
+                // 按级别过滤
+                if (levelFilter !== 'all' && !lineLevel.includes(levelFilter)) {
+                    shouldShow = false;
+                }
+                
+                // 按关键词过滤
+                if (searchFilter && !lineText.includes(searchFilter)) {
+                    shouldShow = false;
+                }
+                
+                line.style.display = shouldShow ? '' : 'none';
+            });
+            
+            updateOutputInfo();
         }
     </script>
 </body>
