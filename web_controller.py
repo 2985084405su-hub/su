@@ -134,9 +134,6 @@ def run_test():
         if var_name in form_data:
             var['value'] = form_data[var_name]
     
-    # 保存变量值（可选）
-    save_variables(variables)
-    
     # 在后台线程中运行脚本
     script_output = ["开始运行测试脚本..."]
     thread = threading.Thread(target=run_script_with_variables, args=(variables,))
