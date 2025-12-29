@@ -3,6 +3,9 @@ from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from smart_locator import SmartLocator, click_interactable, ScrollHandler, IFrameHandler, select_subscribe_title
 
+import os
+import sys
+
 
 
 
@@ -943,8 +946,56 @@ def subscribe_test(site_name='VAVA',subscribe_type=2,pay_type=1):
 
 
 
+
+
+
+# 从环境变量获取参数
+def get_env_variable(name, default=None):
+    """从环境变量获取参数"""
+    return os.environ.get(name, default)
+
+def subscribe_test_from_env():
+    """从环境变量运行测试"""
+    site_name = get_env_variable('site_name', 'VAVA')
+    subscribe_type = int(get_env_variable('subscribe_type', '2'))
+    pay_type = int(get_env_variable('pay_type', '1'))
+    
+    # 处理其他可能的环境变量
+    # custom_param = get_env_variable('custom_param')
+    # if custom_param:
+    #     print(f"自定义参数: {custom_param}")
+    
+    subscribe_test(site_name, subscribe_type, pay_type)
+
+# 修改主函数
 if __name__ == "__main__":
-    #1-个人中心信用卡支付 2-For You信用卡支付 3-个人中心PayPal支付 4-For You PayPal支付
-    #5-个人中心老aw_more支付 6-For You老aw_more支付 7-个人中心老st_more支付 8-For You老st_more支付
-    #9-个人中心新aw_more支付 10-For You新aw_more支付 11-个人中心新st_more支付 12-For You新st_more支付
-    subscribe_test('VIVI',3,5)
+    # 检查是否有命令行参数
+    if len(sys.argv) > 1:
+        # 使用命令行参数
+        site_name = sys.argv[1] if len(sys.argv) > 1 else 'VAVA'
+        subscribe_type = int(sys.argv[2]) if len(sys.argv) > 2 else 2
+        pay_type = int(sys.argv[3]) if len(sys.argv) > 3 else 1
+        subscribe_test(site_name, subscribe_type, pay_type)
+    else:
+        # 使用环境变量
+        subscribe_test_from_env()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# if __name__ == "__main__":
+#     #1-个人中心信用卡支付 2-For You信用卡支付 3-个人中心PayPal支付 4-For You PayPal支付
+#     #5-个人中心老aw_more支付 6-For You老aw_more支付 7-个人中心老st_more支付 8-For You老st_more支付
+#     #9-个人中心新aw_more支付 10-For You新aw_more支付 11-个人中心新st_more支付 12-For You新st_more支付
+#     subscribe_test('VIVI',3,5)

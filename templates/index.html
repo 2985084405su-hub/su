@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>测试脚本控制器</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .header h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            color: #666;
+        }
+        
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .card h2 {
+            color: #444;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #555;
+        }
+        
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .required {
+            color: #e74c3c;
+        }
+        
+        .help-text {
+            font-size: 12px;
+            color: #888;
+            margin-top: 3px;
+            white-space: pre-line;
+        }
+        
+        .buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #5a67d8;
+            transform: translateY(-2px);
+        }
+        
+        .btn-secondary {
+            background: #48bb78;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #38a169;
+            transform: translateY(-2px);
+        }
+        
+        .btn-danger {
+            background: #e74c3c;
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background: #c0392b;
+            transform: translateY(-2px);
+        }
+        
+        .btn-warning {
+            background: #f39c12;
+            color: white;
+        }
+        
+        .btn-warning:hover {
+            background: #d35400;
+            transform: translateY(-2px);
+        }
+        
+        .output-container {
+            position: relative;
+        }
+        
+        #output {
+            background: #1a202c;
+            color: #cbd5e0;
+            padding: 15px;
+            border-radius: 5px;
+            min-height: 400px;
+            max-height: 500px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            white-space: pre-wrap;
+            line-height: 1.4;
+        }
+        
+        #output .log-line {
+            margin-bottom: 2px;
+        }
+        
+        .output-controls {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            display: flex;
+            gap: 5px;
+        }
+        
+        .output-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        
+        .output-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        .variable-item {
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            padding: 12px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+        }
+        
+        .variable-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        
+        .variable-name {
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .variable-actions {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .icon-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #666;
+            padding: 2px 5px;
+        }
+        
+        .icon-btn:hover {
+            color: #333;
+        }
+        
+        .add-variable-form {
+            background: #f0f0f0;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .checkbox-group input {
+            width: auto;
+        }
+        
+        .status-bar {
+            background: white;
+            border-radius: 5px;
+            padding: 10px 20px;
+            margin-top: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #ccc;
+        }
+        
+        .status-dot.running {
+            background: #48bb78;
+            animation: pulse 1.5s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        
+        .footer {
+            text-align: center;
+            margin-top: 20px;
+            color: white;
+            font-size: 14px;
+        }
+        
+        .footer a {
+            color: white;
+            text-decoration: none;
+        }
+        
+        .footer a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-code"></i> 测试脚本控制器</h1>
+            <p>配置变量并运行自动化测试脚本</p>
+        </div>
+        
+        <div class="main-content">
+            <div class="card">
+                <h2><i class="fas fa-sliders-h"></i> 变量配置</h2>
+                <form id="testForm" action="/run" method="POST">
+                    {% for var in variables %}
+                    <div class="form-group">
+                        <label>
+                            {{ var.label }}
+                            {% if var.required %}<span class="required">*</span>{% endif %}
+                        </label>
+                        {% if var.type == 'select' %}
+                        <select name="{{ var.name }}" {% if var.required %}required{% endif %}>
+                            {% for option in var.options %}
+                            <option value="{{ option.value }}" {% if var.default == option.value %}selected{% endif %}>
+                                {{ option.label }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                        {% elif var.type == 'textarea' %}
+                        <textarea name="{{ var.name }}" rows="3" {% if var.required %}required{% endif %}>{{ var.default }}</textarea>
+                        {% else %}
+                        <input type="{{ var.type }}" 
+                               name="{{ var.name }}" 
+                               value="{{ var.default }}"
+                               {% if var.required %}required{% endif %}
+                               placeholder="输入 {{ var.label }}">
+                        {% endif %}
+                        {% if var.description %}
+                        <div class="help-text">{{ var.description }}</div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                    
+                    <div class="buttons">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-play"></i> 运行测试
+                        </button>
+                        <a href="/stop" class="btn btn-danger">
+                            <i class="fas fa-stop"></i> 停止测试
+                        </a>
+                    </div>
+                </form>
+                
+                <div class="add-variable-form">
+                    <h3><i class="fas fa-plus-circle"></i> 添加新变量</h3>
+                    <form action="/add_variable" method="POST">
+                        <div class="form-row">
+                            <div>
+                                <label>变量名</label>
+                                <input type="text" name="name" required placeholder="如: custom_param">
+                            </div>
+                            <div>
+                                <label>显示标签</label>
+                                <input type="text" name="label" required placeholder="如: 自定义参数">
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div>
+                                <label>类型</label>
+                                <select name="type">
+                                    <option value="text">文本</option>
+                                    <option value="number">数字</option>
+                                    <option value="email">邮箱</option>
+                                    <option value="password">密码</option>
+                                    <option value="textarea">多行文本</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label>默认值</label>
+                                <input type="text" name="default" placeholder="默认值">
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div>
+                                <label>描述</label>
+                                <textarea name="description" rows="2" placeholder="变量描述"></textarea>
+                            </div>
+                            <div class="checkbox-group">
+                                <label>
+                                    <input type="checkbox" name="required" value="true">
+                                    必填
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-secondary">
+                            <i class="fas fa-plus"></i> 添加变量
+                        </button>
+                    </form>
+                </div>
+            </div>
+            
+            <div class="card output-container">
+                <div class="output-controls">
+                    <button class="output-btn" onclick="clearOutput()">
+                        <i class="fas fa-trash"></i> 清空
+                    </button>
+                    <button class="output-btn" onclick="refreshOutput()">
+                        <i class="fas fa-sync"></i> 刷新
+                    </button>
+                </div>
+                <h2><i class="fas fa-terminal"></i> 脚本输出</h2>
+                <div id="output">
+                    {% for line in output %}
+                    <div class="log-line">{{ line }}</div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="status-bar">
+            <div class="status-indicator">
+                <div class="status-dot" id="statusDot"></div>
+                <span id="statusText">就绪</span>
+            </div>
+            <div>
+                <a href="/reset_variables" class="btn btn-warning">
+                    <i class="fas fa-redo"></i> 重置变量
+                </a>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>测试脚本控制器 &copy; 2024 | 
+                <a href="#" onclick="showHelp()">帮助</a> | 
+                <a href="#" onclick="showAbout()">关于</a>
+            </p>
+        </div>
+    </div>
+
+    <script>
+        // 自动滚动到输出底部
+        function scrollToBottom() {
+            const output = document.getElementById('output');
+            output.scrollTop = output.scrollHeight;
+        }
+        
+        // 清空输出
+        function clearOutput() {
+            document.getElementById('output').innerHTML = '';
+        }
+        
+        // 刷新输出
+        function refreshOutput() {
+            fetch('/get_output')
+                .then(response => response.json())
+                .then(data => {
+                    const outputDiv = document.getElementById('output');
+                    outputDiv.innerHTML = data.output ? data.output.split('\n').map(line => 
+                        `<div class="log-line">${line}</div>`
+                    ).join('') : '暂无输出';
+                    scrollToBottom();
+                });
+        }
+        
+        // 更新状态指示器
+        function updateStatus() {
+            // 这里可以添加实际的运行状态检测
+            fetch('/get_output')
+                .then(response => response.json())
+                .then(data => {
+                    const statusDot = document.getElementById('statusDot');
+                    const statusText = document.getElementById('statusText');
+                    
+                    if (data.output && data.output.includes('开始运行测试脚本')) {
+                        statusDot.className = 'status-dot running';
+                        statusText.textContent = '运行中';
+                    } else {
+                        statusDot.className = 'status-dot';
+                        statusText.textContent = '就绪';
+                    }
+                });
+        }
+        
+        // 页面加载完成后执行
+        document.addEventListener('DOMContentLoaded', function() {
+            scrollToBottom();
+            
+            // 每5秒更新一次输出和状态
+            setInterval(() => {
+                refreshOutput();
+                updateStatus();
+            }, 5000);
+        });
+        
+        // 显示帮助
+        function showHelp() {
+            alert('使用说明：\n1. 在左侧配置测试变量\n2. 点击"运行测试"开始执行\n3. 右侧查看实时输出\n4. 可以动态添加或移除变量');
+        }
+        
+        // 显示关于
+        function showAbout() {
+            alert('测试脚本控制器 v1.0\n\n这是一个用于控制自动化测试脚本的Web界面，支持动态变量管理和实时输出监控。');
+        }
+    </script>
+</body>
+</html>

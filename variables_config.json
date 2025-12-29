@@ -1,0 +1,27 @@
+[
+  {
+    "name": "site_name",
+    "label": "站点名称",
+    "type": "text",
+    "default": "VAVA",
+    "required": true,
+    "value": "VAVA"
+  },
+  {
+    "name": "subscribe_type",
+    "label": "订阅类型",
+    "type": "number",
+    "default": "2",
+    "required": true,
+    "value": "2"
+  },
+  {
+    "name": "pay_type",
+    "label": "支付类型",
+    "type": "number",
+    "default": "1",
+    "required": true,
+    "description": "1-个人中心信用卡 2-For You信用卡 3-个人中心PayPal 4-For You PayPal\n5-个人中心老aw_more 6-For You老aw_more\n7-个人中心老st_more 8-For You老st_more\n9-个人中心新aw_more 10-For You新aw_more\n11-个人中心新st_more 12-For You新st_more",
+    "value": "1"
+  }
+]
