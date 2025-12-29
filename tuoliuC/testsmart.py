@@ -42,7 +42,7 @@ def profile_card_subscribe(subscribe_data):
     card_number_input.send_keys("4111111111111111")
     email_input = locator.find_element("name=email")
     email_input.clear()
-    email_input.send_keys("2985084405@gmail.com")
+    email_input.send_keys("2985084405su@gmail.com")
     expire_date_input = locator.find_element("name=expire_date")
     expire_date_input.clear()
     expire_date_input.send_keys("03/30")
@@ -59,15 +59,25 @@ def profile_card_subscribe(subscribe_data):
     paynow_btn = locator.find_element("xpath=//span[@class='van-button__text' and text()='Pay Now']")
     click_interactable(paynow_btn, driver)
     try:
-        # 处理 3D 认证
-        cheek_3d_input = locator.find_element("name=challengeDataEntry")
-        cheek_3d_input.clear()
-        cheek_3d_input.send_keys("1234")
-        cheek_3d_btn = locator.find_element("id=submit")
-        click_interactable(cheek_3d_btn, driver)
-        print("3D认证通过")
+        driver.implicitly_wait(2)
+        time.sleep(0.5)
+        # 捕获支付失败的错误信息
+        error_msg = locator.find_element("xpath=//div[@class='error-msg' and @style='']")
+        error_msg_text = error_msg.text
+        print(f"错误信息: {error_msg_text}")
+        print("支付失败，结束脚本")
     except:
-        print("无需3D认证")
+        try:
+            driver.implicitly_wait(5)
+            # 处理 3D 认证
+            cheek_3d_input = locator.find_element("name=challengeDataEntry")
+            cheek_3d_input.clear()
+            cheek_3d_input.send_keys("1234")
+            cheek_3d_btn = locator.find_element("id=submit")
+            click_interactable(cheek_3d_btn, driver)
+            print("3D认证通过")
+        except:
+            print("无需3D认证")
     time.sleep(10)
     driver.refresh()
     time.sleep(0.5)
@@ -139,7 +149,7 @@ def foryou_card_subscribe(subscribe_data):
     paynow_btn = locator.find_element("xpath=//span[@class='van-button__text' and text()='Pay Now']")
     click_interactable(paynow_btn, driver)
     try:
-        driver.implicitly_wait(0.5)
+        driver.implicitly_wait(2)
         time.sleep(0.5)
         # 捕获支付失败的错误信息
         error_msg = locator.find_element("xpath=//div[@class='error-msg' and @style='']")
@@ -332,6 +342,7 @@ def profile_awoldmore_subscribe(subscribe_data):
     name_input.clear()
     name_input.send_keys("sxy sxy")
     #提交支付
+    time.sleep(1)
     scroll_handler.scroll_to_bottom()
     pay_more_btn = locator.find_element("class=SubmitButton-CheckmarkIcon")
     click_interactable(pay_more_btn, driver)
@@ -936,4 +947,4 @@ if __name__ == "__main__":
     #1-个人中心信用卡支付 2-For You信用卡支付 3-个人中心PayPal支付 4-For You PayPal支付
     #5-个人中心老aw_more支付 6-For You老aw_more支付 7-个人中心老st_more支付 8-For You老st_more支付
     #9-个人中心新aw_more支付 10-For You新aw_more支付 11-个人中心新st_more支付 12-For You新st_more支付
-    subscribe_test('VIVI',2,1)
+    subscribe_test('VIVI',3,5)
