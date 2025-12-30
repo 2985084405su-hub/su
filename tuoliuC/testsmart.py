@@ -6,6 +6,41 @@ import os
 import sys
 
 
+def setup_browser():
+    # 读取无头模式设置
+    headless_mode = os.environ.get('HEADLESS', 'True').lower() == 'true'
+    
+    # 立即打印调试信息，确保输出被看到
+    print(f"DEBUG: 无头模式设置: {headless_mode}")
+    print(f"DEBUG: HEADLESS环境变量: {os.environ.get('HEADLESS')}")
+    sys.stdout.flush()  # 强制刷新输出
+    
+    # 配置浏览器选项
+    chrome_options = Options()
+    chrome_options.add_experimental_option(
+        "mobileEmulation", 
+        {"deviceName": "iPhone 12 Pro"}
+    )
+    
+    # 需要在创建 driver 实例之前添加无头模式参数
+    if headless_mode:
+        chrome_options.add_argument('--headless')  # 无头模式
+        chrome_options.add_argument('--no-sandbox')
+        chrome_options.add_argument('--disable-dev-shm-usage')
+    
+    # 创建 driver 实例（带移动端模拟）
+    print(f"DEBUG: 创建浏览器驱动，无头模式: {headless_mode}")
+    sys.stdout.flush()
+    
+    driver = webdriver.Chrome(options=chrome_options)
+    
+    # 然后初始化 SmartLocator
+    locator = SmartLocator(driver)
+    iframe_handler = IFrameHandler(driver)
+    scroll_handler = ScrollHandler(driver)
+    
+    return driver, locator, iframe_handler ,scroll_handler
+
 
 # 从环境变量获取参数，支持空值
 def get_env_variable(name, default=None):
@@ -14,15 +49,22 @@ def get_env_variable(name, default=None):
     
     # 调试输出，查看实际接收到的值
     print(f"DEBUG: 获取环境变量 {name} = '{value}' (原始), 默认值 = '{default}'")
+    sys.stdout.flush()
     
     if value is None:
         # 环境变量不存在
+        print(f"DEBUG: 环境变量 {name} 不存在，使用默认值: {default}")
+        sys.stdout.flush()
         return default
     elif value == '':
         # 环境变量存在但为空字符串
+        print(f"DEBUG: 环境变量 {name} 为空字符串，使用默认值: {default}")
+        sys.stdout.flush()
         return default
     else:
         # 环境变量有值
+        print(f"DEBUG: 环境变量 {name} 有值: {value}")
+        sys.stdout.flush()
         return value
 
 
@@ -30,15 +72,16 @@ def get_env_variable(name, default=None):
 # 卡支付个人中心订阅流程
 def profile_card_subscribe(subscribe_data, user_email, card_no, card_expire, card_cvv):
     """卡支付个人中心订阅流程"""
-    chrome_options = Options()
-    chrome_options.add_experimental_option(
-        "mobileEmulation", 
-        {"deviceName": "iPhone 12 Pro"}
-    )
-    # 创建 driver 实例（带移动端模拟）
-    driver = webdriver.Chrome(options=chrome_options)
-    # 然后初始化 SmartLocator
-    locator = SmartLocator(driver)
+    # chrome_options = Options()
+    # chrome_options.add_experimental_option(
+    #     "mobileEmulation", 
+    #     {"deviceName": "iPhone 12 Pro"}
+    # )
+    # # 创建 driver 实例（带移动端模拟）
+    # driver = webdriver.Chrome(options=chrome_options)
+    # # 然后初始化 SmartLocator
+    # locator = SmartLocator(driver)
+    driver, locator, iframe_handler ,scroll_handler= setup_browser()
     driver.implicitly_wait(5)
     # 访问网站
     driver.get("https://{}".format(subscribe_data[0]))
@@ -105,20 +148,14 @@ def profile_card_subscribe(subscribe_data, user_email, card_no, card_expire, car
     print("等待 30 秒后关闭...")
     time.sleep(10)
     driver.quit()
+    print("=" * 50)
+    print("测试执行完成")
+    print("=" * 50)
 
 # 卡支付FOR YOU 订阅流程
 def foryou_card_subscribe(subscribe_data, user_email, card_no, card_expire, card_cvv):
     """卡支付FOR YOU 订阅流程"""
-    chrome_options = Options()
-
-    chrome_options.add_experimental_option(
-        "mobileEmulation", 
-        {"deviceName": "iPhone 12 Pro"}
-    )
-    # 创建 driver 实例（带移动端模拟）
-    driver = webdriver.Chrome(options=chrome_options)
-    # 然后初始化 SmartLocator
-    locator = SmartLocator(driver)
+    driver, locator, iframe_handler ,scroll_handler= setup_browser()
     driver.implicitly_wait(5)
     # 访问网站
     driver.get("https://{}".format(subscribe_data[0]))
@@ -191,19 +228,15 @@ def foryou_card_subscribe(subscribe_data, user_email, card_no, card_expire, card
     print("等待 30 秒后关闭...")
     time.sleep(30)
     driver.quit()
+    print("=" * 50)
+    print("测试执行完成")
+    print("=" * 50)
+
 
 # PayPal支付个人中心订阅流程
 def profile_paypal_subscribe(subscribe_data, user_email):
     """PayPal支付个人中心订阅流程"""
-    chrome_options = Options()
-    chrome_options.add_experimental_option(
-        "mobileEmulation", 
-        {"deviceName": "iPhone 12 Pro"}
-    )
-    # 创建 driver 实例（带移动端模拟）
-    driver = webdriver.Chrome(options=chrome_options)
-    # 然后初始化 SmartLocator
-    locator = SmartLocator(driver)
+    driver, locator, iframe_handler ,scroll_handler= setup_browser()
     driver.implicitly_wait(5)
     # 访问网站
     driver.get("https://{}".format(subscribe_data[0]))
@@ -245,19 +278,14 @@ def profile_paypal_subscribe(subscribe_data, user_email):
     print("等待 30 秒后关闭...")
     time.sleep(30)
     driver.quit()
+    print("=" * 50)
+    print("测试执行完成")
+    print("=" * 50)
 
 # PayPal支付FOR YOU 订阅流程
 def foryou_paypal_subscribe(subscribe_data, user_email):
     """ PayPal支付FOR YOU 订阅流程"""
-    chrome_options = Options()
-    chrome_options.add_experimental_option(
-        "mobileEmulation", 
-        {"deviceName": "iPhone 12 Pro"}
-    )
-    # 创建 driver 实例（带移动端模拟）
-    driver = webdriver.Chrome(options=chrome_options)
-    # 然后初始化 SmartLocator
-    locator = SmartLocator(driver)
+    driver, locator, iframe_handler ,scroll_handler= setup_browser()
     driver.implicitly_wait(5)
     # 访问网站
     driver.get("https://{}".format(subscribe_data[0]))
@@ -304,20 +332,18 @@ def foryou_paypal_subscribe(subscribe_data, user_email):
     print("等待 30 秒后关闭...")
     time.sleep(30)
     driver.quit()
+    print("=" * 50)
+    print("测试执行完成")
+    print("=" * 50)
+
+
+
+
 
 # 老aw_more支付个人中心订阅流程
 def profile_awoldmore_subscribe(subscribe_data, user_email, card_no, card_expire, card_cvv):
     """ 老aw_more支付个人中心订阅流程"""
-    chrome_options = Options()
-    chrome_options.add_experimental_option(
-        "mobileEmulation", 
-        {"deviceName": "iPhone 12 Pro"}
-    )
-    # 创建 driver 实例（带移动端模拟）
-    driver = webdriver.Chrome(options=chrome_options)
-    # 然后初始化 SmartLocator
-    locator = SmartLocator(driver)
-    scroll_handler = ScrollHandler(driver)
+    driver, locator, iframe_handler ,scroll_handler= setup_browser()
     driver.implicitly_wait(5)
     
     # 访问网站
@@ -383,20 +409,14 @@ def profile_awoldmore_subscribe(subscribe_data, user_email, card_no, card_expire
     print("等待 30 秒后关闭...")
     time.sleep(30)
     driver.quit()
+    print("=" * 50)
+    print("测试执行完成")
+    print("=" * 50)
 
 # 老aw_more支付FOR YOU 订阅流程
 def foryou_awoldmore_subscribe(subscribe_data, user_email, card_no, card_expire, card_cvv):
     """ 老aw_more支付FOR YOU 订阅流程"""
-    chrome_options = Options()
-    chrome_options.add_experimental_option(
-        "mobileEmulation", 
-        {"deviceName": "iPhone 12 Pro"}
-    )
-    # 创建 driver 实例（带移动端模拟）
-    driver = webdriver.Chrome(options=chrome_options)
-    # 然后初始化 SmartLocator
-    locator = SmartLocator(driver)
-    scroll_handler = ScrollHandler(driver)
+    driver, locator, iframe_handler ,scroll_handler= setup_browser()
     driver.implicitly_wait(5)
     
     # 访问网站
@@ -466,20 +486,14 @@ def foryou_awoldmore_subscribe(subscribe_data, user_email, card_no, card_expire,
     print("等待 30 秒后关闭...")
     time.sleep(30)
     driver.quit()
+    print("=" * 50)
+    print("测试执行完成")
+    print("=" * 50)
 
 # 老st_more支付个人中心订阅流程
 def profile_stoldmore_subscribe(subscribe_data, user_email, card_no, card_expire, card_cvv):
     """老st_more支付个人中心订阅流程"""
-    chrome_options = Options()
-    chrome_options.add_experimental_option(
-        "mobileEmulation", 
-        {"deviceName": "iPhone 12 Pro"}
-    )
-    # 创建 driver 实例（带移动端模拟）
-    driver = webdriver.Chrome(options=chrome_options)
-    # 然后初始化 SmartLocator
-    locator = SmartLocator(driver)
-    scroll_handler = ScrollHandler(driver)
+    driver, locator, iframe_handler ,scroll_handler= setup_browser()
     driver.implicitly_wait(5)
     
     # 访问网站
@@ -539,20 +553,15 @@ def profile_stoldmore_subscribe(subscribe_data, user_email, card_no, card_expire
     print("等待 30 秒后关闭...")
     time.sleep(30)
     driver.quit()
+    print("=" * 50)
+    print("测试执行完成")
+    print("=" * 50)
+
 
 # 老st_more支付FOR YOU 订阅流程
 def foryou_stoldmore_subscribe(subscribe_data, user_email, card_no, card_expire, card_cvv):
     """ 老st_more支付FOR YOU 订阅流程"""
-    chrome_options = Options()
-    chrome_options.add_experimental_option(
-        "mobileEmulation", 
-        {"deviceName": "iPhone 12 Pro"}
-    )
-    # 创建 driver 实例（带移动端模拟）
-    driver = webdriver.Chrome(options=chrome_options)
-    # 然后初始化 SmartLocator
-    locator = SmartLocator(driver)
-    scroll_handler = ScrollHandler(driver)
+    driver, locator, iframe_handler ,scroll_handler= setup_browser()
     driver.implicitly_wait(5)
     
     # 访问网站
@@ -617,20 +626,14 @@ def foryou_stoldmore_subscribe(subscribe_data, user_email, card_no, card_expire,
     print("等待 30 秒后关闭...")
     time.sleep(30)
     driver.quit()
+    print("=" * 50)
+    print("测试执行完成")
+    print("=" * 50)
 
 # 新aw_more支付个人中心订阅流程
 def profile_awnewmore_subscribe(subscribe_data, user_email, card_no, card_expire, card_cvv):
     """新aw_more支付个人中心订阅流程"""
-    chrome_options = Options()
-    chrome_options.add_experimental_option(
-        "mobileEmulation", 
-        {"deviceName": "iPhone 12 Pro"}
-    )
-    # 创建 driver 实例（带移动端模拟）
-    driver = webdriver.Chrome(options=chrome_options)
-    # 然后初始化 SmartLocator
-    locator = SmartLocator(driver)
-    iframe_handler = IFrameHandler(driver)
+    driver, locator, iframe_handler ,scroll_handler= setup_browser()
     driver.implicitly_wait(5)
     
     # 访问网站
@@ -696,20 +699,14 @@ def profile_awnewmore_subscribe(subscribe_data, user_email, card_no, card_expire
     print("等待 30 秒后关闭...")
     time.sleep(30)
     driver.quit()
+    print("=" * 50)
+    print("测试执行完成")
+    print("=" * 50)
 
 # 新aw_more支付FOR YOU 订阅流程
 def foryou_awnewmore_subscribe(subscribe_data, user_email, card_no, card_expire, card_cvv):
     """ 新aw_more支付FOR YOU 订阅流程"""
-    chrome_options = Options()
-    chrome_options.add_experimental_option(
-        "mobileEmulation", 
-        {"deviceName": "iPhone 12 Pro"}
-    )
-    # 创建 driver 实例（带移动端模拟）
-    driver = webdriver.Chrome(options=chrome_options)
-    # 然后初始化 SmartLocator
-    locator = SmartLocator(driver)
-    iframe_handler = IFrameHandler(driver)
+    driver, locator, iframe_handler ,scroll_handler= setup_browser()
     driver.implicitly_wait(5)
     
     # 访问网站
@@ -780,20 +777,14 @@ def foryou_awnewmore_subscribe(subscribe_data, user_email, card_no, card_expire,
     print("等待 30 秒后关闭...")
     time.sleep(30)
     driver.quit()
+    print("=" * 50)
+    print("测试执行完成")
+    print("=" * 50)
 
 # 新st_more支付个人中心订阅流程
 def profile_stnewmore_subscribe(subscribe_data, card_no, card_expire, card_cvv):
     """新st_more支付个人中心订阅流程"""
-    chrome_options = Options()
-    chrome_options.add_experimental_option(
-        "mobileEmulation", 
-        {"deviceName": "iPhone 12 Pro"}
-    )
-    # 创建 driver 实例（带移动端模拟）
-    driver = webdriver.Chrome(options=chrome_options)
-    # 然后初始化 SmartLocator
-    locator = SmartLocator(driver)
-    iframe_handler = IFrameHandler(driver)
+    driver, locator, iframe_handler ,scroll_handler= setup_browser()
     driver.implicitly_wait(5)
     
     # 访问网站
@@ -850,20 +841,14 @@ def profile_stnewmore_subscribe(subscribe_data, card_no, card_expire, card_cvv):
     print("等待 30 秒后关闭...")
     time.sleep(30)
     driver.quit()
+    print("=" * 50)
+    print("测试执行完成")
+    print("=" * 50)
 
 # 新st_more支付FOR YOU 订阅流程
 def foryou_stnewmore_subscribe(subscribe_data, card_no, card_expire, card_cvv):
     """新st_more支付FOR YOU 订阅流程"""
-    chrome_options = Options()
-    chrome_options.add_experimental_option(
-        "mobileEmulation", 
-        {"deviceName": "iPhone 12 Pro"}
-    )
-    # 创建 driver 实例（带移动端模拟）
-    driver = webdriver.Chrome(options=chrome_options)
-    # 然后初始化 SmartLocator
-    locator = SmartLocator(driver)
-    iframe_handler = IFrameHandler(driver)
+    driver, locator, iframe_handler ,scroll_handler= setup_browser()
     driver.implicitly_wait(5)
     
     # 访问网站
@@ -925,6 +910,9 @@ def foryou_stnewmore_subscribe(subscribe_data, card_no, card_expire, card_cvv):
     print("等待 30 秒后关闭...")
     time.sleep(30)
     driver.quit()
+    print("=" * 50)
+    print("测试执行完成")
+    print("=" * 50)
 
 
 def subscribe_test(site_name='VAVA',

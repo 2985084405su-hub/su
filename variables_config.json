@@ -16,6 +16,14 @@
     "description": ""
   },
   {
+    "name": "headless_mode",
+    "label": "无头模式",
+    "type": "select",
+    "default": "1",
+    "required": true,
+    "description": "启用后浏览器将在后台运行，不显示界面"
+  },
+  {
     "name": "pay_type",
     "label": "支付类型",
     "type": "number",

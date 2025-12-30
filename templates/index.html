@@ -823,6 +823,21 @@
                             {{ var.label }}
                             {% if var.required %}<span class="required">*</span>{% endif %}
                         </label>
+                        
+                        {% if var.name == 'headless_mode' and var.options %}
+                        <!-- 下拉选择框用于无头模式 -->
+                        <select name="{{ var.name }}" 
+                                id="input-{{ var.name }}"
+                                {% if var.required %}required{% endif %}>
+                            {% for option in var.options %}
+                            <option value="{{ option.value }}" 
+                                    {% if (var.value if var.value else var.default) == option.value %}selected{% endif %}>
+                                {{ option.label }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                        {% else %}
+                        <!-- 原来的输入框 -->
                         <input type="{{ var.type }}" 
                             name="{{ var.name }}" 
                             id="input-{{ var.name }}"
@@ -831,9 +846,12 @@
                             placeholder="输入 {{ var.label }}"
                             {% if var.name == 'user_email' %}onfocus="handleEmailFocus()"{% endif %}
                             {% if var.name == 'pay_type' %}onchange="handlePayTypeChange()"{% endif %}>
+                        {% endif %}
+                        
                         {% if var.description %}
                         <div class="help-text">{{ var.description }}</div>
                         {% endif %}
+                        
                         <!-- PayPal提示信息（初始隐藏） -->
                         {% if var.name == 'user_email' %}
                         <div class="paypal-hint" id="paypalHint">
@@ -939,6 +957,9 @@
             <div class="status-indicator">
                 <div class="status-dot" id="statusDot"></div>
                 <span id="statusText">就绪</span>
+                <span class="headless-status" id="headlessStatus" style="margin-left: 10px; font-size: 12px; color: #666;">
+                    <!-- 无头模式状态将在这里显示 -->
+                </span>
             </div>
             <div class="status-buttons">
                 <a href="/reset_values" class="btn btn-warning btn-sm">
@@ -1299,17 +1320,17 @@
             document.getElementById('output').innerHTML = '';
         }
         
-        function refreshOutput() {
-            fetch('/get_output')
-                .then(response => response.json())
-                .then(data => {
-                    const outputDiv = document.getElementById('output');
-                    outputDiv.innerHTML = data.output ? data.output.split('\n').map(line => 
-                        `<div class="log-line">${line}</div>`
-                    ).join('') : '暂无输出';
-                    scrollToBottom();
-                });
-        }
+        // function refreshOutput() {
+        //     fetch('/get_output')
+        //         .then(response => response.json())
+        //         .then(data => {
+        //             const outputDiv = document.getElementById('output');
+        //             outputDiv.innerHTML = data.output ? data.output.split('\n').map(line => 
+        //                 `<div class="log-line">${line}</div>`
+        //             ).join('') : '暂无输出';
+        //             scrollToBottom();
+        //         });
+        // }
         
         function updateStatus() {
             fetch('/get_output')
@@ -1831,6 +1852,82 @@
                     break;
             }
         });
+        // 监听无头模式变化
+        document.addEventListener('DOMContentLoaded', function() {
+            const headlessInput = document.getElementById('input-headless_mode');
+            if (headlessInput) {
+                headlessInput.addEventListener('change', function() {
+                    const mode = this.value;
+                    if (mode === '1') {
+                        // 启用无头模式时给出提示
+                        console.log('无头模式已启用 - 浏览器将在后台运行');
+                    } else {
+                        console.log('无头模式已禁用 - 浏览器将显示界面');
+                    }
+                });
+            }
+            
+            // 初始检查无头模式状态
+            if (headlessInput) {
+                setTimeout(() => {
+                    const mode = headlessInput.value;
+                    const hintText = mode === '1' ? 
+                        '无头模式已启用（浏览器后台运行，不显示界面）' :
+                        '无头模式已禁用（浏览器显示界面，可见操作过程）';
+                    
+                    // 可以在状态栏添加提示
+                    const statusText = document.getElementById('statusText');
+                    if (statusText) {
+                        statusText.dataset.headlessHint = hintText;
+                    }
+                }, 500);
+            }
+        });
+        // 更新无头模式状态显示
+        function updateHeadlessStatus() {
+            const headlessInput = document.getElementById('input-headless_mode');
+            const statusSpan = document.getElementById('headlessStatus');
+            
+            if (headlessInput && statusSpan) {
+                const mode = headlessInput.value;
+                const modeText = mode === '1' ? '无头模式: 启用' : '无头模式: 禁用';
+                const modeColor = mode === '1' ? '#48bb78' : '#f39c12';
+                
+                statusSpan.textContent = modeText;
+                statusSpan.style.color = modeColor;
+            }
+        }
+
+        // 在DOM加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            updateHeadlessStatus();
+            
+            // 监听无头模式变化
+            const headlessInput = document.getElementById('input-headless_mode');
+            if (headlessInput) {
+                headlessInput.addEventListener('change', updateHeadlessStatus);
+            }
+        });
+        // 检测脚本状态
+        function checkScriptStatus() {
+            fetch('/check_status')
+                .then(response => response.json())
+                .then(data => {
+                    const statusDot = document.getElementById('statusDot');
+                    const statusText = document.getElementById('statusText');
+                    
+                    if (data.is_running) {
+                        statusDot.className = 'status-dot running';
+                        statusText.textContent = '运行中';
+                    } else {
+                        statusDot.className = 'status-dot';
+                        statusText.textContent = '就绪';
+                    }
+                });
+        }
+
+        // 定期检查状态
+        setInterval(checkScriptStatus, 2000);
     </script>
 </body>
 </html>
