@@ -20,7 +20,7 @@ default_variables = [
      "description": "1-个人中心信用卡 2-For You信用卡 3-个人中心PayPal 4-For You PayPal\n5-个人中心老aw_more 6-For You老aw_more\n7-个人中心老st_more 8-For You老st_more\n9-个人中心新aw_more 10-For You新aw_more\n11-个人中心新st_more 12-For You新st_more"},
     # 将支付相关参数改为非必填
     {"name": "user_email", "label": "用户邮箱", "type": "text", "default": "2985084405su@gmail.com", "required": False,
-     "description": "用于支付的用户邮箱（可选，不填使用默认值）"},
+     "description": "用于支付的用户邮箱（可选，不填使用默认值）\npaypal邮箱：sx-duanjuceshi@personal.example.com"},
     {"name": "card_no", "label": "信用卡号", "type": "text", "default": "4111111111111111", "required": False,
      "description": "信用卡号码（可选，不填使用默认值）"},
     {"name": "card_expire", "label": "信用卡有效期", "type": "text", "default": "03/30", "required": False,
@@ -94,7 +94,14 @@ def run_script_with_variables(variables):
         from datetime import datetime
         
         # 构建命令行参数 - 修正路径为 tuoliuC/testsmart.py
-        cmd = [sys.executable, 'tuoliuC/testsmart.py']
+        # 注意：这里我们假设 testsmart.py 和 web_controller.py 在同一目录下，或者使用相对路径
+        # 根据用户上传的文件，它们似乎在同一层级，但原代码中有 tuoliuC/ 前缀
+        # 稳健做法：检查文件是否存在，优先使用当前目录
+        script_path = 'testsmart.py'
+        if not os.path.exists(script_path) and os.path.exists('tuoliuC/testsmart.py'):
+            script_path = 'tuoliuC/testsmart.py'
+            
+        cmd = [sys.executable, script_path]
         
         # 添加变量作为环境变量
         env = os.environ.copy()
@@ -112,7 +119,7 @@ def run_script_with_variables(variables):
         
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         script_output.append(f"[{timestamp}] 开始运行测试脚本")
-        script_output.append(f"[{timestamp}] 脚本路径: tuoliuC/testsmart.py")
+        script_output.append(f"[{timestamp}] 脚本路径: {script_path}")
         script_output.append(f"[{timestamp}] 使用的变量值: {', '.join(actual_values)}")
         
         # 运行脚本
@@ -131,9 +138,15 @@ def run_script_with_variables(variables):
         for line in iter(current_process.stdout.readline, ''):
             if line:
                 cleaned_line = line.strip()
-                timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                script_output.append(f"[{timestamp}] {cleaned_line}")
-                if len(script_output) > 1000:
+                # 如果是API捕获数据，直接透传，不添加时间戳前缀，方便前端解析
+                if "__API_CAPTURE__|" in cleaned_line:
+                     script_output.append(cleaned_line)
+                else:
+                    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                    script_output.append(f"[{timestamp}] {cleaned_line}")
+                
+                # 保持日志长度合理，但不要太短以免丢失API数据
+                if len(script_output) > 2000:
                     script_output.pop(0)
         
         current_process.stdout.close()
@@ -220,8 +233,8 @@ def clear_output():
 def get_output():
     """获取脚本输出（用于AJAX更新）"""
     global script_output
-    # 只返回最后100行，避免数据过大
-    recent_output = script_output[-100:] if len(script_output) > 100 else script_output.copy()
+    # 增加返回的行数限制，确保前端能收到完整的JSON大对象
+    recent_output = script_output[-500:] if len(script_output) > 500 else script_output.copy()
     return jsonify({
         "output": "\n".join(recent_output),
         "total_lines": len(script_output),
@@ -238,7 +251,6 @@ if __name__ == '__main__':
         save_variables(default_variables)
     
     print("启动测试脚本控制器...")
-    print("脚本路径: tuoliuC/testsmart.py")
     print("请访问: http://localhost:5000")
     
     app.run(debug=True, port=5000)

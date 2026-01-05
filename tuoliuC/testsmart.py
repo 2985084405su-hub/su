@@ -1,930 +1,868 @@
 import time
+import json
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from smart_locator import SmartLocator, click_interactable, ScrollHandler, IFrameHandler, select_subscribe_title
 import os
 import sys
 
+# Constants for API Capture
+TARGET_APIS = ['api/subscribe/create', 'api/subscribe/check-payment-url']
 
-
-# 从环境变量获取参数，支持空值
 def get_env_variable(name, default=None):
     """从环境变量获取参数"""
     value = os.environ.get(name)
-    
-    # 调试输出，查看实际接收到的值
     print(f"DEBUG: 获取环境变量 {name} = '{value}' (原始), 默认值 = '{default}'")
-    
     if value is None:
-        # 环境变量不存在
         return default
     elif value == '':
-        # 环境变量存在但为空字符串
         return default
     else:
-        # 环境变量有值
         return value
 
+def init_driver_with_logging():
+    """初始化带有性能日志记录的Driver"""
+    chrome_options = Options()
+    chrome_options.add_experimental_option(
+        "mobileEmulation", 
+        {"deviceName": "iPhone 12 Pro"}
+    )
+    # 开启性能日志
+    chrome_options.set_capability('goog:loggingPrefs', {'performance': 'ALL'})
+    
+    driver = webdriver.Chrome(options=chrome_options)
+    return driver
 
+def capture_and_print_api_traffic(driver):
+    """捕获并打印API流量信息"""
+    try:
+        # 获取性能日志
+        logs = driver.get_log('performance')
+        
+        for entry in logs:
+            try:
+                message = json.loads(entry['message'])['message']
+                method = message.get('method')
+                params = message.get('params', {})
+                request_id = params.get('requestId')
+                
+                # 检查是否是我们关注的请求
+                if method == 'Network.responseReceived':
+                    response = params.get('response', {})
+                    url = response.get('url', '')
+                    
+                    if any(api in url for api in TARGET_APIS):
+                        # 获取响应体
+                        response_body = "无法获取或为空"
+                        try:
+                            res_body_data = driver.execute_cdp_cmd('Network.getResponseBody', {'requestId': request_id})
+                            response_body = res_body_data.get('body', '')
+                        except Exception as e:
+                            response_body = f"获取失败: {str(e)}"
+
+                        # 构造输出数据
+                        api_data = {
+                            "url": url,
+                            "requestId": request_id,
+                            "status": response.get('status'),
+                            "response_headers": response.get('headers'),
+                            "response_body": response_body,
+                            "timestamp": time.strftime("%Y-%m-%d %H:%M:%S")
+                        }
+                        
+                        # 尝试查找对应的请求信息 (注意：这里简化处理，实际请求信息通常在 requestWillBeSent 中)
+                        # 为了演示，我们标记一下，前端可以据此展示
+                        print(f"__API_CAPTURE__|{json.dumps(api_data)}")
+                        
+                elif method == 'Network.requestWillBeSent':
+                    request = params.get('request', {})
+                    url = request.get('url', '')
+                    
+                    if any(api in url for api in TARGET_APIS):
+                        request_body = request.get('postData', '无请求体或非文本格式')
+                        
+                        api_data = {
+                            "url": url,
+                            "requestId": request_id,
+                            "type": "request",
+                            "request_headers": request.get('headers'),
+                            "request_body": request_body,
+                            "method": request.get('method')
+                        }
+                        print(f"__API_CAPTURE__|{json.dumps(api_data)}")
+                        
+            except Exception as e:
+                pass
+                
+    except Exception as e:
+        print(f"日志捕获错误: {str(e)}")
+
+def wait_and_capture(driver, seconds):
+    """等待指定时间并持续捕获日志"""
+    end_time = time.time() + seconds
+    while time.time() < end_time:
+        capture_and_print_api_traffic(driver)
+        time.sleep(0.5)
 
 # 卡支付个人中心订阅流程
 def profile_card_subscribe(subscribe_data, user_email, card_no, card_expire, card_cvv):
-    """卡支付个人中心订阅流程"""
-    chrome_options = Options()
-    chrome_options.add_experimental_option(
-        "mobileEmulation", 
-        {"deviceName": "iPhone 12 Pro"}
-    )
-    # 创建 driver 实例（带移动端模拟）
-    driver = webdriver.Chrome(options=chrome_options)
-    # 然后初始化 SmartLocator
+    driver = init_driver_with_logging()
     locator = SmartLocator(driver)
     driver.implicitly_wait(5)
-    # 访问网站
-    driver.get("https://{}".format(subscribe_data[0]))
-    #点击个人中心
-    profile_btn = locator.find_element("xpath=//span[text()='Profile']")
-    click_interactable(profile_btn, driver)
-    #点击订阅按钮
-    subscribe_btn = locator.find_element("xpath=//span[@class='van-button__text' and text()='Subscribe Now']")
-    click_interactable(subscribe_btn, driver)
-    #选择订阅类型
-    subscribe_type_btn = locator.find_element("xpath=//div[@class='right-title' and text()={}]".format(repr(subscribe_data[1])))
-    click_interactable(subscribe_type_btn, driver)
-    #选择支付方式
-    card_payment_btn = locator.find_element("xpath=//button[contains(@class, 'pay-btn') and not(@style)]")
-    click_interactable(card_payment_btn, driver)
-    #填写支付信息
-    card_number_input = locator.find_element("name=card_no")
-    card_number_input.clear()
-    card_number_input.send_keys(card_no)
-    email_input = locator.find_element("name=email")
-    email_input.clear()
-    email_input.send_keys(user_email)
-    expire_date_input = locator.find_element("name=expire_date")
-    expire_date_input.clear()
-    expire_date_input.send_keys(card_expire)
-    cvv_input = locator.find_element("name=cvv")
-    cvv_input.clear()
-    cvv_input.send_keys(card_cvv)
-    first_name_input = locator.find_element("css=input[placeholder='FirstName']")
-    first_name_input.clear()
-    first_name_input.send_keys("John")
-    last_name_input = locator.find_element("css=input[placeholder='LastName']")
-    last_name_input.clear()
-    last_name_input.send_keys("John")
-    #提交支付
-    paynow_btn = locator.find_element("xpath=//span[@class='van-button__text' and text()='Pay Now']")
-    click_interactable(paynow_btn, driver)
+    
     try:
-        driver.implicitly_wait(2)
-        time.sleep(0.5)
-        # 捕获支付失败的错误信息
-        error_msg = locator.find_element("xpath=//div[@class='error-msg' and @style='']")
-        error_msg_text = error_msg.text
-        print(f"错误信息: {error_msg_text}")
-        print("支付失败，结束脚本")
-    except:
+        driver.get("https://{}".format(subscribe_data[0]))
+        
+        # 流程操作...
+        profile_btn = locator.find_element("xpath=//span[text()='Profile']")
+        click_interactable(profile_btn, driver)
+        
+        subscribe_btn = locator.find_element("xpath=//span[@class='van-button__text' and text()='Subscribe Now']")
+        click_interactable(subscribe_btn, driver)
+        
+        subscribe_type_btn = locator.find_element("xpath=//div[@class='right-title' and text()={}]".format(repr(subscribe_data[1])))
+        click_interactable(subscribe_type_btn, driver)
+        
+        card_payment_btn = locator.find_element("xpath=//button[contains(@class, 'pay-btn') and not(@style)]")
+        click_interactable(card_payment_btn, driver)
+        
+        card_number_input = locator.find_element("name=card_no")
+        card_number_input.clear()
+        card_number_input.send_keys(card_no)
+        email_input = locator.find_element("name=email")
+        email_input.clear()
+        email_input.send_keys(user_email)
+        expire_date_input = locator.find_element("name=expire_date")
+        expire_date_input.clear()
+        expire_date_input.send_keys(card_expire)
+        cvv_input = locator.find_element("name=cvv")
+        cvv_input.clear()
+        cvv_input.send_keys(card_cvv)
+        first_name_input = locator.find_element("css=input[placeholder='FirstName']")
+        first_name_input.clear()
+        first_name_input.send_keys("John")
+        last_name_input = locator.find_element("css=input[placeholder='LastName']")
+        last_name_input.clear()
+        last_name_input.send_keys("John")
+        
+        # 提交支付
+        paynow_btn = locator.find_element("xpath=//span[@class='van-button__text' and text()='Pay Now']")
+        click_interactable(paynow_btn, driver)
+        
+        # 关键点：在支付后持续捕获日志
+        print("正在等待API响应并捕获数据...")
+        wait_and_capture(driver, 5) # 捕获5秒
+        
         try:
-            driver.implicitly_wait(5)
-            # 处理 3D 认证
-            cheek_3d_input = locator.find_element("name=challengeDataEntry")
-            cheek_3d_input.clear()
-            cheek_3d_input.send_keys("1234")
-            cheek_3d_btn = locator.find_element("id=submit")
-            click_interactable(cheek_3d_btn, driver)
-            print("3D认证通过")
+            driver.implicitly_wait(2)
+            time.sleep(0.5)
+            error_msg = locator.find_element("xpath=//div[@class='error-msg' and @style='']")
+            error_msg_text = error_msg.text
+            print(f"错误信息: {error_msg_text}")
+            print("支付失败，结束脚本")
         except:
-            print("无需3D认证")
-    time.sleep(10)
-    driver.refresh()
-    time.sleep(0.5)
-    uuid_test = locator.find_element("class=userId")
-    full_text = uuid_test.text
-    print(f"完整文本: {full_text}")
-    print("等待 30 秒后关闭...")
-    time.sleep(10)
-    driver.quit()
+            try:
+                driver.implicitly_wait(5)
+                cheek_3d_input = locator.find_element("name=challengeDataEntry")
+                cheek_3d_input.clear()
+                cheek_3d_input.send_keys("1234")
+                cheek_3d_btn = locator.find_element("id=submit")
+                click_interactable(cheek_3d_btn, driver)
+                print("3D认证通过")
+            except:
+                print("无需3D认证")
+        
+        # 刷新前再捕获一波
+        wait_and_capture(driver, 5)
+        
+        time.sleep(0.5)
+        uuid_test = locator.find_element("class=userId")
+        full_text = uuid_test.text
+        print(f"完整文本: {full_text}")
+        
+        print("等待 10 秒后关闭...")
+        wait_and_capture(driver, 10)
+        
+    finally:
+        driver.quit()
 
 # 卡支付FOR YOU 订阅流程
 def foryou_card_subscribe(subscribe_data, user_email, card_no, card_expire, card_cvv):
-    """卡支付FOR YOU 订阅流程"""
-    chrome_options = Options()
-
-    chrome_options.add_experimental_option(
-        "mobileEmulation", 
-        {"deviceName": "iPhone 12 Pro"}
-    )
-    # 创建 driver 实例（带移动端模拟）
-    driver = webdriver.Chrome(options=chrome_options)
-    # 然后初始化 SmartLocator
+    driver = init_driver_with_logging()
     locator = SmartLocator(driver)
     driver.implicitly_wait(5)
-    # 访问网站
-    driver.get("https://{}".format(subscribe_data[0]))
-
-    #点击FOR YOU
-    profile_btn = locator.find_element("xpath=//span[text()='For You']")
-    click_interactable(profile_btn, driver)
-    #点击watch now按钮
-    subscribe_btn = locator.find_element("xpath=//span[@class='van-button__text' and text()='Watch Now']")
-    click_interactable(subscribe_btn, driver)
-    #点击屏幕
-    trigger = locator.find_element("class=trigger")
-    click_interactable(trigger, driver)
-    #选择剧集
-    episode_element = locator.find_element("xpath=//p[starts-with(text(), 'Episode')]")
-    click_interactable(episode_element, driver)
-    #点击锁按钮
-    lock_btn= locator.find_element("class=lock")
-    click_interactable(lock_btn, driver)
-    #选择订阅类型
-    subscribe_type_btn = locator.find_element("xpath=//div[@class='right-title' and text()={}]".format(repr(subscribe_data[1])))
-    click_interactable(subscribe_type_btn, driver)
-    #选择支付方式
-    card_payment_btn = locator.find_element("xpath=//div[@class='card-payment-box' and text()='Card Payment']")
-    click_interactable(card_payment_btn, driver)
-    #填写支付信息
-    card_number_input = locator.find_element("name=card_no")
-    card_number_input.clear()
-    card_number_input.send_keys(card_no)
-    email_input = locator.find_element("name=email")
-    email_input.clear()
-    email_input.send_keys(user_email)
-    expire_date_input = locator.find_element("name=expire_date")
-    expire_date_input.clear()
-    expire_date_input.send_keys(card_expire)
-    cvv_input = locator.find_element("name=cvv")
-    cvv_input.clear()
-    cvv_input.send_keys(card_cvv)
-    first_name_input = locator.find_element("css=input[placeholder='FirstName']")
-    first_name_input.clear()
-    first_name_input.send_keys("John")
-    last_name_input = locator.find_element("css=input[placeholder='LastName']")
-    last_name_input.clear()
-    last_name_input.send_keys("John")
-    #提交支付
-    paynow_btn = locator.find_element("xpath=//span[@class='van-button__text' and text()='Pay Now']")
-    click_interactable(paynow_btn, driver)
+    
     try:
-        driver.implicitly_wait(2)
-        time.sleep(0.5)
-        # 捕获支付失败的错误信息
-        error_msg = locator.find_element("xpath=//div[@class='error-msg' and @style='']")
-        error_msg_text = error_msg.text
-        print(f"错误信息: {error_msg_text}")
-        print("支付失败，结束脚本")
-    except:
+        driver.get("https://{}".format(subscribe_data[0]))
+
+        profile_btn = locator.find_element("xpath=//span[text()='For You']")
+        click_interactable(profile_btn, driver)
+        subscribe_btn = locator.find_element("xpath=//span[@class='van-button__text' and text()='Watch Now']")
+        click_interactable(subscribe_btn, driver)
+        trigger = locator.find_element("class=trigger")
+        click_interactable(trigger, driver)
+        episode_element = locator.find_element("xpath=//p[starts-with(text(), 'Episode')]")
+        click_interactable(episode_element, driver)
+        lock_btn= locator.find_element("class=lock")
+        click_interactable(lock_btn, driver)
+        
+        subscribe_type_btn = locator.find_element("xpath=//div[@class='right-title' and text()={}]".format(repr(subscribe_data[1])))
+        click_interactable(subscribe_type_btn, driver)
+        
+        card_payment_btn = locator.find_element("xpath=//div[@class='card-payment-box' and text()='Card Payment']")
+        click_interactable(card_payment_btn, driver)
+        
+        card_number_input = locator.find_element("name=card_no")
+        card_number_input.clear()
+        card_number_input.send_keys(card_no)
+        email_input = locator.find_element("name=email")
+        email_input.clear()
+        email_input.send_keys(user_email)
+        expire_date_input = locator.find_element("name=expire_date")
+        expire_date_input.clear()
+        expire_date_input.send_keys(card_expire)
+        cvv_input = locator.find_element("name=cvv")
+        cvv_input.clear()
+        cvv_input.send_keys(card_cvv)
+        first_name_input = locator.find_element("css=input[placeholder='FirstName']")
+        first_name_input.clear()
+        first_name_input.send_keys("John")
+        last_name_input = locator.find_element("css=input[placeholder='LastName']")
+        last_name_input.clear()
+        last_name_input.send_keys("John")
+        
+        paynow_btn = locator.find_element("xpath=//span[@class='van-button__text' and text()='Pay Now']")
+        click_interactable(paynow_btn, driver)
+        
+        print("正在等待API响应并捕获数据...")
+        wait_and_capture(driver, 5)
+        
         try:
-            driver.implicitly_wait(5)
-            # 处理 3D 认证
-            cheek_3d_input = locator.find_element("name=challengeDataEntry")
-            cheek_3d_input.clear()
-            cheek_3d_input.send_keys("1234")
-            cheek_3d_btn = locator.find_element("id=submit")
-            click_interactable(cheek_3d_btn, driver)
-            print("3D认证通过")
+            driver.implicitly_wait(2)
+            time.sleep(0.5)
+            error_msg = locator.find_element("xpath=//div[@class='error-msg' and @style='']")
+            error_msg_text = error_msg.text
+            print(f"错误信息: {error_msg_text}")
+            print("支付失败，结束脚本")
         except:
-            print("无需3D认证")
-    time.sleep(3)
-    driver.refresh()
-    print("等待 30 秒后关闭...")
-    time.sleep(30)
-    driver.quit()
+            try:
+                driver.implicitly_wait(5)
+                cheek_3d_input = locator.find_element("name=challengeDataEntry")
+                cheek_3d_input.clear()
+                cheek_3d_input.send_keys("1234")
+                cheek_3d_btn = locator.find_element("id=submit")
+                click_interactable(cheek_3d_btn, driver)
+                print("3D认证通过")
+            except:
+                print("无需3D认证")
+        
+        wait_and_capture(driver, 3)
+        print("等待 10 秒后关闭...")
+        wait_and_capture(driver, 10)
+    finally:
+        driver.quit()
 
 # PayPal支付个人中心订阅流程
 def profile_paypal_subscribe(subscribe_data, user_email):
-    """PayPal支付个人中心订阅流程"""
-    chrome_options = Options()
-    chrome_options.add_experimental_option(
-        "mobileEmulation", 
-        {"deviceName": "iPhone 12 Pro"}
-    )
-    # 创建 driver 实例（带移动端模拟）
-    driver = webdriver.Chrome(options=chrome_options)
-    # 然后初始化 SmartLocator
+    driver = init_driver_with_logging()
     locator = SmartLocator(driver)
     driver.implicitly_wait(5)
-    # 访问网站
-    driver.get("https://{}".format(subscribe_data[0]))
-    #点击个人中心
-    profile_btn = locator.find_element("xpath=//span[text()='Profile']")
-    click_interactable(profile_btn, driver)
-    #点击订阅按钮
-    subscribe_btn = locator.find_element("xpath=//span[@class='van-button__text' and text()='Subscribe Now']")
-    click_interactable(subscribe_btn, driver)
-    #选择订阅类型
-    subscribe_type_btn = locator.find_element("xpath=//div[@class='right-title' and text()={}]".format(repr(subscribe_data[1])))
-    click_interactable(subscribe_type_btn, driver)
-    #选择支付方式
-    paypal_payment_btn = locator.find_element("class=paypal-btn")
-    click_interactable(paypal_payment_btn, driver)
-    #paypal支付页面输入账号
-    paypal_email_input = locator.find_element("id=email")
-    paypal_email_input.clear()
-    paypal_email_input.send_keys(user_email)
-    #点击下一步
-    paypal_btnNext = locator.find_element("id=btnNext")
-    click_interactable(paypal_btnNext, driver)
-    #输入密码
-    paypal_password_input = locator.find_element("id=password")
-    paypal_password_input.clear()
-    paypal_password_input.send_keys("Ye123456")
-    #点击登录
-    paypal_btnLogin = locator.find_element("id=btnLogin")
-    click_interactable(paypal_btnLogin, driver)
-    #同意支付
-    paypal_consentButton = locator.find_element("id=consentButton")
-    click_interactable(paypal_consentButton, driver)
-    time.sleep(10)
-    driver.refresh()
-    time.sleep(0.5)
-    uuid_test = locator.find_element("class=userId")
-    full_text = uuid_test.text
-    print(f"完整文本: {full_text}")
-    print("等待 30 秒后关闭...")
-    time.sleep(30)
-    driver.quit()
+    
+    try:
+        driver.get("https://{}".format(subscribe_data[0]))
+        
+        profile_btn = locator.find_element("xpath=//span[text()='Profile']")
+        click_interactable(profile_btn, driver)
+        subscribe_btn = locator.find_element("xpath=//span[@class='van-button__text' and text()='Subscribe Now']")
+        click_interactable(subscribe_btn, driver)
+        
+        subscribe_type_btn = locator.find_element("xpath=//div[@class='right-title' and text()={}]".format(repr(subscribe_data[1])))
+        click_interactable(subscribe_type_btn, driver)
+        
+        paypal_payment_btn = locator.find_element("class=paypal-btn")
+        click_interactable(paypal_payment_btn, driver)
+        
+        # 捕获可能的 API 调用
+        wait_and_capture(driver, 2)
+        
+        paypal_email_input = locator.find_element("id=email")
+        paypal_email_input.clear()
+        paypal_email_input.send_keys(user_email)
+        paypal_btnNext = locator.find_element("id=btnNext")
+        click_interactable(paypal_btnNext, driver)
+        
+        paypal_password_input = locator.find_element("id=password")
+        paypal_password_input.clear()
+        paypal_password_input.send_keys("Ye123456")
+        paypal_btnLogin = locator.find_element("id=btnLogin")
+        click_interactable(paypal_btnLogin, driver)
+        
+        paypal_consentButton = locator.find_element("id=consentButton")
+        click_interactable(paypal_consentButton, driver)
+        
+        print("正在等待API响应并捕获数据...")
+        wait_and_capture(driver, 10)
+        
+        time.sleep(0.5)
+        uuid_test = locator.find_element("class=userId")
+        full_text = uuid_test.text
+        print(f"完整文本: {full_text}")
+        print("等待 10 秒后关闭...")
+        wait_and_capture(driver, 10)
+    finally:
+        driver.quit()
 
 # PayPal支付FOR YOU 订阅流程
 def foryou_paypal_subscribe(subscribe_data, user_email):
-    """ PayPal支付FOR YOU 订阅流程"""
-    chrome_options = Options()
-    chrome_options.add_experimental_option(
-        "mobileEmulation", 
-        {"deviceName": "iPhone 12 Pro"}
-    )
-    # 创建 driver 实例（带移动端模拟）
-    driver = webdriver.Chrome(options=chrome_options)
-    # 然后初始化 SmartLocator
+    driver = init_driver_with_logging()
     locator = SmartLocator(driver)
     driver.implicitly_wait(5)
-    # 访问网站
-    driver.get("https://{}".format(subscribe_data[0]))
-    #点击FOR YOU
-    profile_btn = locator.find_element("xpath=//span[text()='For You']")
-    click_interactable(profile_btn, driver)
-    #点击watch now按钮
-    subscribe_btn = locator.find_element("xpath=//span[@class='van-button__text' and text()='Watch Now']")
-    click_interactable(subscribe_btn, driver)
-    #点击屏幕
-    trigger = locator.find_element("class=trigger")
-    click_interactable(trigger, driver)
-    #选择剧集
-    episode_element = locator.find_element("xpath=//p[starts-with(text(), 'Episode')]")
-    click_interactable(episode_element, driver)
-    #点击锁按钮
-    lock_btn= locator.find_element("class=lock")
-    click_interactable(lock_btn, driver)
-    #选择订阅类型
-    subscribe_type_btn = locator.find_element("xpath=//div[@class='right-title' and text()={}]".format(repr(subscribe_data[1])))
-    click_interactable(subscribe_type_btn, driver)
-    #选择支付方式
-    paypal_payment_btn = locator.find_element("class=paypal-btn")
-    click_interactable(paypal_payment_btn, driver)
-    #paypal支付页面输入账号
-    paypal_email_input = locator.find_element("id=email")
-    paypal_email_input.clear()
-    paypal_email_input.send_keys(user_email)
-    #点击下一步
-    paypal_btnNext = locator.find_element("id=btnNext")
-    click_interactable(paypal_btnNext, driver)
-    #输入密码
-    paypal_password_input = locator.find_element("id=password")
-    paypal_password_input.clear()
-    paypal_password_input.send_keys("Ye123456")
-    #点击登录
-    paypal_btnLogin = locator.find_element("id=btnLogin")
-    click_interactable(paypal_btnLogin, driver)
-    #同意支付
-    paypal_consentButton = locator.find_element("id=consentButton")
-    click_interactable(paypal_consentButton, driver)
-    time.sleep(10)
-    driver.refresh()
-    print("等待 30 秒后关闭...")
-    time.sleep(30)
-    driver.quit()
+    
+    try:
+        driver.get("https://{}".format(subscribe_data[0]))
+        profile_btn = locator.find_element("xpath=//span[text()='For You']")
+        click_interactable(profile_btn, driver)
+        subscribe_btn = locator.find_element("xpath=//span[@class='van-button__text' and text()='Watch Now']")
+        click_interactable(subscribe_btn, driver)
+        trigger = locator.find_element("class=trigger")
+        click_interactable(trigger, driver)
+        episode_element = locator.find_element("xpath=//p[starts-with(text(), 'Episode')]")
+        click_interactable(episode_element, driver)
+        lock_btn= locator.find_element("class=lock")
+        click_interactable(lock_btn, driver)
+        subscribe_type_btn = locator.find_element("xpath=//div[@class='right-title' and text()={}]".format(repr(subscribe_data[1])))
+        click_interactable(subscribe_type_btn, driver)
+        
+        paypal_payment_btn = locator.find_element("class=paypal-btn")
+        click_interactable(paypal_payment_btn, driver)
+        
+        wait_and_capture(driver, 2)
+        
+        paypal_email_input = locator.find_element("id=email")
+        paypal_email_input.clear()
+        paypal_email_input.send_keys(user_email)
+        paypal_btnNext = locator.find_element("id=btnNext")
+        click_interactable(paypal_btnNext, driver)
+        
+        paypal_password_input = locator.find_element("id=password")
+        paypal_password_input.clear()
+        paypal_password_input.send_keys("Ye123456")
+        paypal_btnLogin = locator.find_element("id=btnLogin")
+        click_interactable(paypal_btnLogin, driver)
+        paypal_consentButton = locator.find_element("id=consentButton")
+        click_interactable(paypal_consentButton, driver)
+        
+        print("正在等待API响应并捕获数据...")
+        wait_and_capture(driver, 10)
+        
+        print("等待 10 秒后关闭...")
+        wait_and_capture(driver, 10)
+    finally:
+        driver.quit()
 
 # 老aw_more支付个人中心订阅流程
 def profile_awoldmore_subscribe(subscribe_data, user_email, card_no, card_expire, card_cvv):
-    """ 老aw_more支付个人中心订阅流程"""
-    chrome_options = Options()
-    chrome_options.add_experimental_option(
-        "mobileEmulation", 
-        {"deviceName": "iPhone 12 Pro"}
-    )
-    # 创建 driver 实例（带移动端模拟）
-    driver = webdriver.Chrome(options=chrome_options)
-    # 然后初始化 SmartLocator
+    driver = init_driver_with_logging()
     locator = SmartLocator(driver)
     scroll_handler = ScrollHandler(driver)
     driver.implicitly_wait(5)
     
-    # 访问网站
-    driver.get("https://{}".format(subscribe_data[0]))
-    #点击个人中心
-    profile_btn = locator.find_element("xpath=//span[text()='Profile']")
-    click_interactable(profile_btn, driver)
-    #点击订阅按钮
-    subscribe_btn = locator.find_element("xpath=//span[@class='van-button__text' and text()='Subscribe Now']")
-    click_interactable(subscribe_btn, driver)
-    #选择订阅类型
-    subscribe_type_btn = locator.find_element("xpath=//div[@class='right-title' and text()={}]".format(repr(subscribe_data[1])))
-    click_interactable(subscribe_type_btn, driver)
-    #选择支付类型
-    subscribe_type_btn = locator.find_element("class=stripe-btn")
-    click_interactable(subscribe_type_btn, driver)
-    time.sleep(2)
-    #输入聚合支付邮箱
-    sidebar = locator.find_element("class=van-field__body")
-    eamil_more_input = locator.find_element("class=van-field__control", context=sidebar)
-    eamil_more_input.clear()
-    eamil_more_input.send_keys(user_email)
-    #提交邮箱
-    more_contirm_btn = locator.find_element("xpath=//span[@class='van-button__text' and text()='Confirm']")
-    click_interactable(more_contirm_btn, driver)
-    #填写支付信息
-    us_flag = locator.find_element("css=img[alt='US']")
-    click_interactable(us_flag, driver)
-    time.sleep(1)
-    card_number_input = locator.find_element("id=cardNumber")
-    card_number_input.clear()
-    card_number_input.send_keys(card_no)
-    expire_date_input = locator.find_element("id=cardExpiry")
-    expire_date_input.clear()
-    expire_date_input.send_keys(card_expire)
-    cvv_input = locator.find_element("id=cardCvc")
-    cvv_input.clear()
-    cvv_input.send_keys(card_cvv)
-    name_input = locator.find_element("id=billingName")
-    name_input.clear()
-    name_input.send_keys("sxy sxy")
-    #提交支付
-    time.sleep(1)
-    scroll_handler.scroll_to_bottom()
-    pay_more_btn = locator.find_element("class=SubmitButton-CheckmarkIcon")
-    click_interactable(pay_more_btn, driver)
-    # try:
-    #     # 处理 3D 认证
-    #     cheek_3d_input = locator.find_element("name=challengeDataEntry")
-    #     cheek_3d_input.clear()
-    #     cheek_3d_input.send_keys("1234")
-    #     cheek_3d_btn = locator.find_element("id=submit")
-    #     click_interactable(cheek_3d_btn, driver)
-    #     print("3D认证通过")
-    # except:
-    #     print("无需3D认证")
-    time.sleep(10)
-    driver.refresh()
-    time.sleep(0.5)
-    uuid_test = locator.find_element("class=userId")
-    full_text = uuid_test.text
-    print(f"完整文本: {full_text}")
-    print("等待 30 秒后关闭...")
-    time.sleep(30)
-    driver.quit()
+    try:
+        driver.get("https://{}".format(subscribe_data[0]))
+        profile_btn = locator.find_element("xpath=//span[text()='Profile']")
+        click_interactable(profile_btn, driver)
+        subscribe_btn = locator.find_element("xpath=//span[@class='van-button__text' and text()='Subscribe Now']")
+        click_interactable(subscribe_btn, driver)
+        subscribe_type_btn = locator.find_element("xpath=//div[@class='right-title' and text()={}]".format(repr(subscribe_data[1])))
+        click_interactable(subscribe_type_btn, driver)
+        
+        subscribe_type_btn = locator.find_element("class=stripe-btn")
+        click_interactable(subscribe_type_btn, driver)
+        time.sleep(2)
+        
+        sidebar = locator.find_element("class=van-field__body")
+        eamil_more_input = locator.find_element("class=van-field__control", context=sidebar)
+        eamil_more_input.clear()
+        eamil_more_input.send_keys(user_email)
+        
+        more_contirm_btn = locator.find_element("xpath=//span[@class='van-button__text' and text()='Confirm']")
+        click_interactable(more_contirm_btn, driver)
+        
+        us_flag = locator.find_element("css=img[alt='US']")
+        click_interactable(us_flag, driver)
+        time.sleep(1)
+        card_number_input = locator.find_element("id=cardNumber")
+        card_number_input.clear()
+        card_number_input.send_keys(card_no)
+        expire_date_input = locator.find_element("id=cardExpiry")
+        expire_date_input.clear()
+        expire_date_input.send_keys(card_expire)
+        cvv_input = locator.find_element("id=cardCvc")
+        cvv_input.clear()
+        cvv_input.send_keys(card_cvv)
+        name_input = locator.find_element("id=billingName")
+        name_input.clear()
+        name_input.send_keys("sxy sxy")
+        
+        scroll_handler.scroll_to_bottom()
+        pay_more_btn = locator.find_element("class=SubmitButton-CheckmarkIcon")
+        click_interactable(pay_more_btn, driver)
+        
+        print("正在等待API响应并捕获数据...")
+        wait_and_capture(driver, 5)
+        uuid_test = locator.find_element("class=userId")
+        full_text = uuid_test.text
+        print(f"完整文本: {full_text}")
+        print("等待 3 秒后关闭...")
+        wait_and_capture(driver, 3)
+    finally:
+        driver.quit()
 
 # 老aw_more支付FOR YOU 订阅流程
 def foryou_awoldmore_subscribe(subscribe_data, user_email, card_no, card_expire, card_cvv):
-    """ 老aw_more支付FOR YOU 订阅流程"""
-    chrome_options = Options()
-    chrome_options.add_experimental_option(
-        "mobileEmulation", 
-        {"deviceName": "iPhone 12 Pro"}
-    )
-    # 创建 driver 实例（带移动端模拟）
-    driver = webdriver.Chrome(options=chrome_options)
-    # 然后初始化 SmartLocator
+    driver = init_driver_with_logging()
     locator = SmartLocator(driver)
     scroll_handler = ScrollHandler(driver)
     driver.implicitly_wait(5)
     
-    # 访问网站
-    driver.get("https://{}".format(subscribe_data[0]))
-    #点击FOR YOU
-    profile_btn = locator.find_element("xpath=//span[text()='For You']")
-    click_interactable(profile_btn, driver)
-    #点击watch now按钮
-    subscribe_btn = locator.find_element("xpath=//span[@class='van-button__text' and text()='Watch Now']")
-    click_interactable(subscribe_btn, driver)
-    #点击屏幕
-    trigger = locator.find_element("class=trigger")
-    click_interactable(trigger, driver)
-    #选择剧集
-    episode_element = locator.find_element("xpath=//p[starts-with(text(), 'Episode')]")
-    click_interactable(episode_element, driver)
-    #点击锁按钮
-    lock_btn= locator.find_element("class=lock")
-    click_interactable(lock_btn, driver)
-    #选择订阅类型
-    subscribe_type_btn = locator.find_element("xpath=//div[@class='right-title' and text()={}]".format(repr(subscribe_data[1])))
-    click_interactable(subscribe_type_btn, driver)
-    #选择支付类型
-    subscribe_type_btn = locator.find_element("class=stripe-btn")
-    click_interactable(subscribe_type_btn, driver)
-    time.sleep(2)
-    #输入聚合支付邮箱
-    sidebar = locator.find_element("class=van-field__body")
-    eamil_more_input = locator.find_element("class=van-field__control", context=sidebar)
-    eamil_more_input.clear()
-    eamil_more_input.send_keys(user_email)
-    #提交邮箱
-    more_contirm_btn = locator.find_element("xpath=//span[@class='van-button__text' and text()='Confirm']")
-    click_interactable(more_contirm_btn, driver)
-    #填写支付信息
-    us_flag = locator.find_element("css=img[alt='US']")
-    click_interactable(us_flag, driver)
-    time.sleep(1)
-    card_number_input = locator.find_element("id=cardNumber")
-    card_number_input.clear()
-    card_number_input.send_keys(card_no)
-    expire_date_input = locator.find_element("id=cardExpiry")
-    expire_date_input.clear()
-    expire_date_input.send_keys(card_expire)
-    cvv_input = locator.find_element("id=cardCvc")
-    cvv_input.clear()
-    cvv_input.send_keys(card_cvv)
-    name_input = locator.find_element("id=billingName")
-    name_input.clear()
-    name_input.send_keys("sxy sxy")
-    #提交支付
-    scroll_handler.scroll_to_bottom()
-    pay_more_btn = locator.find_element("class=SubmitButton-CheckmarkIcon")
-    click_interactable(pay_more_btn, driver)
-    # try:
-    #     # 处理 3D 认证
-    #     cheek_3d_input = locator.find_element("name=challengeDataEntry")
-    #     cheek_3d_input.clear()
-    #     cheek_3d_input.send_keys("1234")
-    #     cheek_3d_btn = locator.find_element("id=submit")
-    #     click_interactable(cheek_3d_btn, driver)
-    #     print("3D认证通过")
-    # except:
-    #     print("无需3D认证")
-    time.sleep(10)
-    driver.refresh()
-    print("等待 30 秒后关闭...")
-    time.sleep(30)
-    driver.quit()
+    try:
+        driver.get("https://{}".format(subscribe_data[0]))
+        profile_btn = locator.find_element("xpath=//span[text()='For You']")
+        click_interactable(profile_btn, driver)
+        subscribe_btn = locator.find_element("xpath=//span[@class='van-button__text' and text()='Watch Now']")
+        click_interactable(subscribe_btn, driver)
+        trigger = locator.find_element("class=trigger")
+        click_interactable(trigger, driver)
+        episode_element = locator.find_element("xpath=//p[starts-with(text(), 'Episode')]")
+        click_interactable(episode_element, driver)
+        lock_btn= locator.find_element("class=lock")
+        click_interactable(lock_btn, driver)
+        subscribe_type_btn = locator.find_element("xpath=//div[@class='right-title' and text()={}]".format(repr(subscribe_data[1])))
+        click_interactable(subscribe_type_btn, driver)
+        
+        subscribe_type_btn = locator.find_element("class=stripe-btn")
+        click_interactable(subscribe_type_btn, driver)
+        time.sleep(2)
+        
+        sidebar = locator.find_element("class=van-field__body")
+        eamil_more_input = locator.find_element("class=van-field__control", context=sidebar)
+        eamil_more_input.clear()
+        eamil_more_input.send_keys(user_email)
+        
+        more_contirm_btn = locator.find_element("xpath=//span[@class='van-button__text' and text()='Confirm']")
+        click_interactable(more_contirm_btn, driver)
+        
+        us_flag = locator.find_element("css=img[alt='US']")
+        click_interactable(us_flag, driver)
+        time.sleep(1)
+        card_number_input = locator.find_element("id=cardNumber")
+        card_number_input.clear()
+        card_number_input.send_keys(card_no)
+        expire_date_input = locator.find_element("id=cardExpiry")
+        expire_date_input.clear()
+        expire_date_input.send_keys(card_expire)
+        cvv_input = locator.find_element("id=cardCvc")
+        cvv_input.clear()
+        cvv_input.send_keys(card_cvv)
+        name_input = locator.find_element("id=billingName")
+        name_input.clear()
+        name_input.send_keys("sxy sxy")
+        
+        scroll_handler.scroll_to_bottom()
+        pay_more_btn = locator.find_element("class=SubmitButton-CheckmarkIcon")
+        click_interactable(pay_more_btn, driver)
+        
+        print("正在等待API响应并捕获数据...")
+        wait_and_capture(driver, 10)
+        
+        driver.refresh()
+        print("等待 10 秒后关闭...")
+        wait_and_capture(driver, 10)
+    finally:
+        driver.quit()
 
 # 老st_more支付个人中心订阅流程
 def profile_stoldmore_subscribe(subscribe_data, user_email, card_no, card_expire, card_cvv):
-    """老st_more支付个人中心订阅流程"""
-    chrome_options = Options()
-    chrome_options.add_experimental_option(
-        "mobileEmulation", 
-        {"deviceName": "iPhone 12 Pro"}
-    )
-    # 创建 driver 实例（带移动端模拟）
-    driver = webdriver.Chrome(options=chrome_options)
-    # 然后初始化 SmartLocator
+    driver = init_driver_with_logging()
     locator = SmartLocator(driver)
     scroll_handler = ScrollHandler(driver)
     driver.implicitly_wait(5)
     
-    # 访问网站
-    driver.get("https://{}".format(subscribe_data[0]))
-    #点击个人中心
-    profile_btn = locator.find_element("xpath=//span[text()='Profile']")
-    click_interactable(profile_btn, driver)
-    #点击订阅按钮
-    subscribe_btn = locator.find_element("xpath=//span[@class='van-button__text' and text()='Subscribe Now']")
-    click_interactable(subscribe_btn, driver)
-    #选择订阅类型
-    subscribe_type_btn = locator.find_element("xpath=//div[@class='right-title' and text()={}]".format(repr(subscribe_data[1])))
-    click_interactable(subscribe_type_btn, driver)
-    #选择支付类型
-    subscribe_type_btn = locator.find_element("class=stripe-btn")
-    click_interactable(subscribe_type_btn, driver)
-    time.sleep(2)
-    #填写支付信息
-    us_flag = locator.find_element("css=img[alt='US']")
-    click_interactable(us_flag, driver)
-    time.sleep(1)
-    eaml_more_input = locator.find_element("id=email")
-    eaml_more_input.clear()
-    eaml_more_input.send_keys(user_email)
-    card_number_input = locator.find_element("id=cardNumber")
-    card_number_input.clear()
-    card_number_input.send_keys(card_no)
-    expire_date_input = locator.find_element("id=cardExpiry")
-    expire_date_input.clear()
-    expire_date_input.send_keys(card_expire)
-    cvv_input = locator.find_element("id=cardCvc")
-    cvv_input.clear()
-    cvv_input.send_keys(card_cvv)
-    name_input = locator.find_element("id=billingName")
-    name_input.clear()
-    name_input.send_keys("sxy sxy")
-    #提交支付
-    scroll_handler.scroll_to_bottom()
-    pay_more_btn = locator.find_element("class=SubmitButton-CheckmarkIcon")
-    click_interactable(pay_more_btn, driver)
-    # try:
-    #     # 处理 3D 认证
-    #     cheek_3d_input = locator.find_element("name=challengeDataEntry")
-    #     cheek_3d_input.clear()
-    #     cheek_3d_input.send_keys("1234")
-    #     cheek_3d_btn = locator.find_element("id=submit")
-    #     click_interactable(cheek_3d_btn, driver)
-    #     print("3D认证通过")
-    # except:
-    #     print("无需3D认证")
-    time.sleep(10)
-    driver.refresh()
-    time.sleep(0.5)
-    uuid_test = locator.find_element("class=userId")
-    full_text = uuid_test.text
-    print(f"完整文本: {full_text}")
-    print("等待 30 秒后关闭...")
-    time.sleep(30)
-    driver.quit()
+    try:
+        driver.get("https://{}".format(subscribe_data[0]))
+        profile_btn = locator.find_element("xpath=//span[text()='Profile']")
+        click_interactable(profile_btn, driver)
+        subscribe_btn = locator.find_element("xpath=//span[@class='van-button__text' and text()='Subscribe Now']")
+        click_interactable(subscribe_btn, driver)
+        subscribe_type_btn = locator.find_element("xpath=//div[@class='right-title' and text()={}]".format(repr(subscribe_data[1])))
+        click_interactable(subscribe_type_btn, driver)
+        
+        subscribe_type_btn = locator.find_element("class=stripe-btn")
+        click_interactable(subscribe_type_btn, driver)
+        time.sleep(2)
+        
+        us_flag = locator.find_element("css=img[alt='US']")
+        click_interactable(us_flag, driver)
+        time.sleep(1)
+        eaml_more_input = locator.find_element("id=email")
+        eaml_more_input.clear()
+        eaml_more_input.send_keys(user_email)
+        card_number_input = locator.find_element("id=cardNumber")
+        card_number_input.clear()
+        card_number_input.send_keys(card_no)
+        expire_date_input = locator.find_element("id=cardExpiry")
+        expire_date_input.clear()
+        expire_date_input.send_keys(card_expire)
+        cvv_input = locator.find_element("id=cardCvc")
+        cvv_input.clear()
+        cvv_input.send_keys(card_cvv)
+        name_input = locator.find_element("id=billingName")
+        name_input.clear()
+        name_input.send_keys("sxy sxy")
+        
+        scroll_handler.scroll_to_bottom()
+        pay_more_btn = locator.find_element("class=SubmitButton-CheckmarkIcon")
+        click_interactable(pay_more_btn, driver)
+        
+        print("正在等待API响应并捕获数据...")
+        wait_and_capture(driver, 10)
+        
+        driver.refresh()
+        time.sleep(0.5)
+        uuid_test = locator.find_element("class=userId")
+        full_text = uuid_test.text
+        print(f"完整文本: {full_text}")
+        print("等待 10 秒后关闭...")
+        wait_and_capture(driver, 10)
+    finally:
+        driver.quit()
 
 # 老st_more支付FOR YOU 订阅流程
 def foryou_stoldmore_subscribe(subscribe_data, user_email, card_no, card_expire, card_cvv):
-    """ 老st_more支付FOR YOU 订阅流程"""
-    chrome_options = Options()
-    chrome_options.add_experimental_option(
-        "mobileEmulation", 
-        {"deviceName": "iPhone 12 Pro"}
-    )
-    # 创建 driver 实例（带移动端模拟）
-    driver = webdriver.Chrome(options=chrome_options)
-    # 然后初始化 SmartLocator
+    driver = init_driver_with_logging()
     locator = SmartLocator(driver)
     scroll_handler = ScrollHandler(driver)
     driver.implicitly_wait(5)
     
-    # 访问网站
-    driver.get("https://{}".format(subscribe_data[0]))
-    #点击FOR YOU
-    profile_btn = locator.find_element("xpath=//span[text()='For You']")
-    click_interactable(profile_btn, driver)
-    #点击watch now按钮
-    subscribe_btn = locator.find_element("xpath=//span[@class='van-button__text' and text()='Watch Now']")
-    click_interactable(subscribe_btn, driver)
-    #点击屏幕
-    trigger = locator.find_element("class=trigger")
-    click_interactable(trigger, driver)
-    #选择剧集
-    episode_element = locator.find_element("xpath=//p[starts-with(text(), 'Episode')]")
-    click_interactable(episode_element, driver)
-    #点击锁按钮
-    lock_btn= locator.find_element("class=lock")
-    click_interactable(lock_btn, driver)
-    #选择订阅类型
-    subscribe_type_btn = locator.find_element("xpath=//div[@class='right-title' and text()={}]".format(repr(subscribe_data[1])))
-    click_interactable(subscribe_type_btn, driver)
-    #选择支付类型
-    subscribe_type_btn = locator.find_element("class=stripe-btn")
-    click_interactable(subscribe_type_btn, driver)
-    time.sleep(2)
-    #填写支付信息
-    us_flag = locator.find_element("css=img[alt='US']")
-    click_interactable(us_flag, driver)
-    time.sleep(1)
-    eaml_more_input = locator.find_element("id=email")
-    eaml_more_input.clear()
-    eaml_more_input.send_keys(user_email)
-    card_number_input = locator.find_element("id=cardNumber")
-    card_number_input.clear()
-    card_number_input.send_keys(card_no)
-    expire_date_input = locator.find_element("id=cardExpiry")
-    expire_date_input.clear()
-    expire_date_input.send_keys(card_expire)
-    cvv_input = locator.find_element("id=cardCvc")
-    cvv_input.clear()
-    cvv_input.send_keys(card_cvv)
-    name_input = locator.find_element("id=billingName")
-    name_input.clear()
-    name_input.send_keys("sxy sxy")
-    #提交支付
-    scroll_handler.scroll_to_bottom()
-    pay_more_btn = locator.find_element("class=SubmitButton-CheckmarkIcon")
-    click_interactable(pay_more_btn, driver)
-    # try:
-    #     # 处理 3D 认证
-    #     cheek_3d_input = locator.find_element("name=challengeDataEntry")
-    #     cheek_3d_input.clear()
-    #     cheek_3d_input.send_keys("1234")
-    #     cheek_3d_btn = locator.find_element("id=submit")
-    #     click_interactable(cheek_3d_btn, driver)
-    #     print("3D认证通过")
-    # except:
-    #     print("无需3D认证")
-    time.sleep(10)
-    driver.refresh()
-    print("等待 30 秒后关闭...")
-    time.sleep(30)
-    driver.quit()
+    try:
+        driver.get("https://{}".format(subscribe_data[0]))
+        profile_btn = locator.find_element("xpath=//span[text()='For You']")
+        click_interactable(profile_btn, driver)
+        subscribe_btn = locator.find_element("xpath=//span[@class='van-button__text' and text()='Watch Now']")
+        click_interactable(subscribe_btn, driver)
+        trigger = locator.find_element("class=trigger")
+        click_interactable(trigger, driver)
+        episode_element = locator.find_element("xpath=//p[starts-with(text(), 'Episode')]")
+        click_interactable(episode_element, driver)
+        lock_btn= locator.find_element("class=lock")
+        click_interactable(lock_btn, driver)
+        subscribe_type_btn = locator.find_element("xpath=//div[@class='right-title' and text()={}]".format(repr(subscribe_data[1])))
+        click_interactable(subscribe_type_btn, driver)
+        
+        subscribe_type_btn = locator.find_element("class=stripe-btn")
+        click_interactable(subscribe_type_btn, driver)
+        time.sleep(2)
+        
+        us_flag = locator.find_element("css=img[alt='US']")
+        click_interactable(us_flag, driver)
+        time.sleep(1)
+        eaml_more_input = locator.find_element("id=email")
+        eaml_more_input.clear()
+        eaml_more_input.send_keys(user_email)
+        card_number_input = locator.find_element("id=cardNumber")
+        card_number_input.clear()
+        card_number_input.send_keys(card_no)
+        expire_date_input = locator.find_element("id=cardExpiry")
+        expire_date_input.clear()
+        expire_date_input.send_keys(card_expire)
+        cvv_input = locator.find_element("id=cardCvc")
+        cvv_input.clear()
+        cvv_input.send_keys(card_cvv)
+        name_input = locator.find_element("id=billingName")
+        name_input.clear()
+        name_input.send_keys("sxy sxy")
+        
+        scroll_handler.scroll_to_bottom()
+        pay_more_btn = locator.find_element("class=SubmitButton-CheckmarkIcon")
+        click_interactable(pay_more_btn, driver)
+        
+        print("正在等待API响应并捕获数据...")
+        wait_and_capture(driver, 10)
+        
+        driver.refresh()
+        print("等待 10 秒后关闭...")
+        wait_and_capture(driver, 10)
+    finally:
+        driver.quit()
 
 # 新aw_more支付个人中心订阅流程
 def profile_awnewmore_subscribe(subscribe_data, user_email, card_no, card_expire, card_cvv):
-    """新aw_more支付个人中心订阅流程"""
-    chrome_options = Options()
-    chrome_options.add_experimental_option(
-        "mobileEmulation", 
-        {"deviceName": "iPhone 12 Pro"}
-    )
-    # 创建 driver 实例（带移动端模拟）
-    driver = webdriver.Chrome(options=chrome_options)
-    # 然后初始化 SmartLocator
+    driver = init_driver_with_logging()
     locator = SmartLocator(driver)
     iframe_handler = IFrameHandler(driver)
     driver.implicitly_wait(5)
     
-    # 访问网站
-    driver.get("https://{}".format(subscribe_data[0]))
-    #点击个人中心
-    profile_btn = locator.find_element("xpath=//span[text()='Profile']")
-    click_interactable(profile_btn, driver)
-    #点击订阅按钮
-    subscribe_btn = locator.find_element("xpath=//span[@class='van-button__text' and text()='Subscribe Now']")
-    click_interactable(subscribe_btn, driver)
-    #选择订阅类型
-    subscribe_type_btn = locator.find_element("xpath=//div[@class='right-title' and text()={}]".format(repr(subscribe_data[1])))
-    click_interactable(subscribe_type_btn, driver)
-    #选择支付类型
-    subscribe_type_btn = locator.find_element("class=stripe-btn")
-    click_interactable(subscribe_type_btn, driver)
-    time.sleep(2)
-    #输入聚合支付邮箱
-    sidebar = locator.find_element("class=van-field__body")
-    eamil_more_input = locator.find_element("class=van-field__control", context=sidebar)
-    eamil_more_input.clear()
-    eamil_more_input.send_keys(user_email)
-    #提交邮箱
-    more_contirm_btn = locator.find_element("xpath=//span[@class='van-button__text' and text()='Confirm']")
-    click_interactable(more_contirm_btn, driver)
-    #填写支付信息
-    time.sleep(1)
-    card_number_input = locator.find_element("name=cardnumber")
-    card_number_input.clear()
-    card_number_input.send_keys(card_no)
-    expire_date_input = locator.find_element("name=expiry")
-    expire_date_input.clear()
-    expire_date_input.send_keys(card_expire)
-    cvv_input = locator.find_element("name=cvc")
-    cvv_input.clear()
-    cvv_input.send_keys(card_cvv)
-    name_input = locator.find_element("name=name")
-    name_input.clear()
-    name_input.send_keys("sxy sxy")
-    #提交支付
-    pay_more_btn = locator.find_element("class=css-yen4e3")
-    click_interactable(pay_more_btn, driver)
     try:
-        # 处理 3D 认证
-        iframe_handler.switch_to_iframe_by_path(["Airwallex 3DS wrapper iframe", "Airwallex 3DS iframe", "issuer-iframe"])
-        # 现在在 iframe 内，可以操作 iframe 内的元素
-        code_input = locator.find_element("id=challengeDataEntry")
-        code_input.clear()
-        code_input.send_keys("1234")
-        submit_btn = locator.find_element("id=submit")
-        click_interactable(submit_btn, driver)
-        # 切回主文档
-        # iframe_handler.switch_to.default_content()
-        print("3D认证通过")
-    except:
-        print("无需3D认证")
-    time.sleep(5)
-    driver.refresh()
-    time.sleep(0.5)
-    uuid_test = locator.find_element("class=userId")
-    full_text = uuid_test.text
-    print(f"完整文本: {full_text}")
-    print("等待 30 秒后关闭...")
-    time.sleep(30)
-    driver.quit()
+        driver.get("https://{}".format(subscribe_data[0]))
+        profile_btn = locator.find_element("xpath=//span[text()='Profile']")
+        click_interactable(profile_btn, driver)
+        subscribe_btn = locator.find_element("xpath=//span[@class='van-button__text' and text()='Subscribe Now']")
+        click_interactable(subscribe_btn, driver)
+        subscribe_type_btn = locator.find_element("xpath=//div[@class='right-title' and text()={}]".format(repr(subscribe_data[1])))
+        click_interactable(subscribe_type_btn, driver)
+        
+        subscribe_type_btn = locator.find_element("class=stripe-btn")
+        click_interactable(subscribe_type_btn, driver)
+        time.sleep(2)
+        
+        sidebar = locator.find_element("class=van-field__body")
+        eamil_more_input = locator.find_element("class=van-field__control", context=sidebar)
+        eamil_more_input.clear()
+        eamil_more_input.send_keys(user_email)
+        more_contirm_btn = locator.find_element("xpath=//span[@class='van-button__text' and text()='Confirm']")
+        click_interactable(more_contirm_btn, driver)
+        
+        time.sleep(1)
+        card_number_input = locator.find_element("name=cardnumber")
+        card_number_input.clear()
+        card_number_input.send_keys(card_no)
+        expire_date_input = locator.find_element("name=expiry")
+        expire_date_input.clear()
+        expire_date_input.send_keys(card_expire)
+        cvv_input = locator.find_element("name=cvc")
+        cvv_input.clear()
+        cvv_input.send_keys(card_cvv)
+        name_input = locator.find_element("name=name")
+        name_input.clear()
+        name_input.send_keys("sxy sxy")
+        
+        pay_more_btn = locator.find_element("class=css-yen4e3")
+        click_interactable(pay_more_btn, driver)
+        
+        print("正在等待API响应并捕获数据...")
+        wait_and_capture(driver, 5)
+        
+        try:
+            # 处理 3D 认证
+            iframe_handler.switch_to_iframe_by_path(["Airwallex 3DS wrapper iframe", "Airwallex 3DS iframe", "issuer-iframe"])
+            code_input = locator.find_element("id=challengeDataEntry")
+            code_input.clear()
+            code_input.send_keys("1234")
+            submit_btn = locator.find_element("id=submit")
+            click_interactable(submit_btn, driver)
+            print("3D认证通过")
+        except:
+            print("无需3D认证")
+        
+        wait_and_capture(driver, 5)
+        
+        driver.refresh()
+        time.sleep(0.5)
+        uuid_test = locator.find_element("class=userId")
+        full_text = uuid_test.text
+        print(f"完整文本: {full_text}")
+        print("等待 10 秒后关闭...")
+        wait_and_capture(driver, 10)
+    finally:
+        driver.quit()
 
 # 新aw_more支付FOR YOU 订阅流程
 def foryou_awnewmore_subscribe(subscribe_data, user_email, card_no, card_expire, card_cvv):
-    """ 新aw_more支付FOR YOU 订阅流程"""
-    chrome_options = Options()
-    chrome_options.add_experimental_option(
-        "mobileEmulation", 
-        {"deviceName": "iPhone 12 Pro"}
-    )
-    # 创建 driver 实例（带移动端模拟）
-    driver = webdriver.Chrome(options=chrome_options)
-    # 然后初始化 SmartLocator
+    driver = init_driver_with_logging()
     locator = SmartLocator(driver)
     iframe_handler = IFrameHandler(driver)
     driver.implicitly_wait(5)
     
-    # 访问网站
-    driver.get("https://{}".format(subscribe_data[0]))
-    #点击FOR YOU
-    profile_btn = locator.find_element("xpath=//span[text()='For You']")
-    click_interactable(profile_btn, driver)
-    #点击watch now按钮
-    subscribe_btn = locator.find_element("xpath=//span[@class='van-button__text' and text()='Watch Now']")
-    click_interactable(subscribe_btn, driver)
-    #点击屏幕
-    trigger = locator.find_element("class=trigger")
-    click_interactable(trigger, driver)
-    #选择剧集
-    episode_element = locator.find_element("xpath=//p[starts-with(text(), 'Episode')]")
-    click_interactable(episode_element, driver)
-    #点击锁按钮
-    lock_btn= locator.find_element("class=lock")
-    click_interactable(lock_btn, driver)
-    #选择订阅类型
-    subscribe_type_btn = locator.find_element("xpath=//div[@class='right-title' and text()={}]".format(repr(subscribe_data[1])))
-    click_interactable(subscribe_type_btn, driver)
-    #选择支付类型
-    subscribe_type_btn = locator.find_element("class=stripe-btn")
-    click_interactable(subscribe_type_btn, driver)
-    time.sleep(2)
-    #输入聚合支付邮箱
-    sidebar = locator.find_element("class=van-field__body")
-    eamil_more_input = locator.find_element("class=van-field__control", context=sidebar)
-    eamil_more_input.clear()
-    eamil_more_input.send_keys(user_email)
-    #提交邮箱
-    more_contirm_btn = locator.find_element("xpath=//span[@class='van-button__text' and text()='Confirm']")
-    click_interactable(more_contirm_btn, driver)
-    #填写支付信息
-    time.sleep(1)
-    card_number_input = locator.find_element("name=cardnumber")
-    card_number_input.clear()
-    card_number_input.send_keys(card_no)
-    expire_date_input = locator.find_element("name=expiry")
-    expire_date_input.clear()
-    expire_date_input.send_keys(card_expire)
-    cvv_input = locator.find_element("name=cvc")
-    cvv_input.clear()
-    cvv_input.send_keys(card_cvv)
-    name_input = locator.find_element("name=name")
-    name_input.clear()
-    name_input.send_keys("sxy sxy")
-    #提交支付
-    pay_more_btn = locator.find_element("class=css-yen4e3")
-    click_interactable(pay_more_btn, driver)
     try:
-        # 处理 3D 认证
-        iframe_handler.switch_to_iframe_by_path(["Airwallex 3DS wrapper iframe", "Airwallex 3DS iframe", "issuer-iframe"])
-        # 现在在 iframe 内，可以操作 iframe 内的元素
-        code_input = locator.find_element("id=challengeDataEntry")
-        code_input.clear()
-        code_input.send_keys("1234")
-        submit_btn = locator.find_element("id=submit")
-        click_interactable(submit_btn, driver)
-        # 切回主文档
-        # iframe_handler.switch_to.default_content()
-        print("3D认证通过")
-    except:
-        print("无需3D认证")
-    time.sleep(5)
-    driver.refresh()
-    print("等待 30 秒后关闭...")
-    time.sleep(30)
-    driver.quit()
+        driver.get("https://{}".format(subscribe_data[0]))
+        profile_btn = locator.find_element("xpath=//span[text()='For You']")
+        click_interactable(profile_btn, driver)
+        subscribe_btn = locator.find_element("xpath=//span[@class='van-button__text' and text()='Watch Now']")
+        click_interactable(subscribe_btn, driver)
+        trigger = locator.find_element("class=trigger")
+        click_interactable(trigger, driver)
+        episode_element = locator.find_element("xpath=//p[starts-with(text(), 'Episode')]")
+        click_interactable(episode_element, driver)
+        lock_btn= locator.find_element("class=lock")
+        click_interactable(lock_btn, driver)
+        subscribe_type_btn = locator.find_element("xpath=//div[@class='right-title' and text()={}]".format(repr(subscribe_data[1])))
+        click_interactable(subscribe_type_btn, driver)
+        
+        subscribe_type_btn = locator.find_element("class=stripe-btn")
+        click_interactable(subscribe_type_btn, driver)
+        time.sleep(2)
+        
+        sidebar = locator.find_element("class=van-field__body")
+        eamil_more_input = locator.find_element("class=van-field__control", context=sidebar)
+        eamil_more_input.clear()
+        eamil_more_input.send_keys(user_email)
+        more_contirm_btn = locator.find_element("xpath=//span[@class='van-button__text' and text()='Confirm']")
+        click_interactable(more_contirm_btn, driver)
+        
+        time.sleep(1)
+        card_number_input = locator.find_element("name=cardnumber")
+        card_number_input.clear()
+        card_number_input.send_keys(card_no)
+        expire_date_input = locator.find_element("name=expiry")
+        expire_date_input.clear()
+        expire_date_input.send_keys(card_expire)
+        cvv_input = locator.find_element("name=cvc")
+        cvv_input.clear()
+        cvv_input.send_keys(card_cvv)
+        name_input = locator.find_element("name=name")
+        name_input.clear()
+        name_input.send_keys("sxy sxy")
+        
+        pay_more_btn = locator.find_element("class=css-yen4e3")
+        click_interactable(pay_more_btn, driver)
+        
+        print("正在等待API响应并捕获数据...")
+        wait_and_capture(driver, 5)
+        
+        try:
+            iframe_handler.switch_to_iframe_by_path(["Airwallex 3DS wrapper iframe", "Airwallex 3DS iframe", "issuer-iframe"])
+            code_input = locator.find_element("id=challengeDataEntry")
+            code_input.clear()
+            code_input.send_keys("1234")
+            submit_btn = locator.find_element("id=submit")
+            click_interactable(submit_btn, driver)
+            print("3D认证通过")
+        except:
+            print("无需3D认证")
+        
+        wait_and_capture(driver, 5)
+        
+        driver.refresh()
+        print("等待 10 秒后关闭...")
+        wait_and_capture(driver, 10)
+    finally:
+        driver.quit()
 
 # 新st_more支付个人中心订阅流程
 def profile_stnewmore_subscribe(subscribe_data, card_no, card_expire, card_cvv):
-    """新st_more支付个人中心订阅流程"""
-    chrome_options = Options()
-    chrome_options.add_experimental_option(
-        "mobileEmulation", 
-        {"deviceName": "iPhone 12 Pro"}
-    )
-    # 创建 driver 实例（带移动端模拟）
-    driver = webdriver.Chrome(options=chrome_options)
-    # 然后初始化 SmartLocator
+    driver = init_driver_with_logging()
     locator = SmartLocator(driver)
     iframe_handler = IFrameHandler(driver)
     driver.implicitly_wait(5)
     
-    # 访问网站
-    driver.get("https://{}".format(subscribe_data[0]))
-    #点击个人中心
-    profile_btn = locator.find_element("xpath=//span[text()='Profile']")
-    click_interactable(profile_btn, driver)
-    #点击订阅按钮
-    subscribe_btn = locator.find_element("xpath=//span[@class='van-button__text' and text()='Subscribe Now']")
-    click_interactable(subscribe_btn, driver)
-    #选择订阅类型
-    subscribe_type_btn = locator.find_element("xpath=//div[@class='right-title' and text()={}]".format(repr(subscribe_data[1])))
-    click_interactable(subscribe_type_btn, driver)
-    #选择支付类型
-    subscribe_type_btn = locator.find_element("class=stripe-btn")
-    click_interactable(subscribe_type_btn, driver)
-    #填写支付信息
-    time.sleep(1)
-    card_number_input = locator.find_element("name=cardnumber")
-    card_number_input.clear()
-    card_number_input.send_keys(card_no)
-    expire_date_input = locator.find_element("name=expiry")
-    expire_date_input.clear()
-    expire_date_input.send_keys(card_expire)
-    cvv_input = locator.find_element("name=cvc")
-    cvv_input.clear()
-    cvv_input.send_keys(card_cvv)
-    name_input = locator.find_element("name=name")
-    name_input.clear()
-    name_input.send_keys("sxy sxy")
-    #提交支付
-    pay_more_btn = locator.find_element("class=css-yen4e3")
-    click_interactable(pay_more_btn, driver)
     try:
-        # 处理 3D 认证
-        iframe_handler.switch_to_iframe_by_path(["Airwallex 3DS wrapper iframe", "Airwallex 3DS iframe", "issuer-iframe"])
-        # 现在在 iframe 内，可以操作 iframe 内的元素
-        code_input = locator.find_element("id=challengeDataEntry")
-        code_input.clear()
-        code_input.send_keys("1234")
-        submit_btn = locator.find_element("id=submit")
-        click_interactable(submit_btn, driver)
-        # 切回主文档
-        # iframe_handler.switch_to.default_content()
-        print("3D认证通过")
-    except:
-        print("无需3D认证")
-    time.sleep(5)
-    driver.refresh()
-    time.sleep(0.5)
-    uuid_test = locator.find_element("class=userId")
-    full_text = uuid_test.text
-    print(f"完整文本: {full_text}")
-    print("等待 30 秒后关闭...")
-    time.sleep(30)
-    driver.quit()
+        driver.get("https://{}".format(subscribe_data[0]))
+        profile_btn = locator.find_element("xpath=//span[text()='Profile']")
+        click_interactable(profile_btn, driver)
+        subscribe_btn = locator.find_element("xpath=//span[@class='van-button__text' and text()='Subscribe Now']")
+        click_interactable(subscribe_btn, driver)
+        subscribe_type_btn = locator.find_element("xpath=//div[@class='right-title' and text()={}]".format(repr(subscribe_data[1])))
+        click_interactable(subscribe_type_btn, driver)
+        
+        subscribe_type_btn = locator.find_element("class=stripe-btn")
+        click_interactable(subscribe_type_btn, driver)
+        
+        time.sleep(1)
+        card_number_input = locator.find_element("name=cardnumber")
+        card_number_input.clear()
+        card_number_input.send_keys(card_no)
+        expire_date_input = locator.find_element("name=expiry")
+        expire_date_input.clear()
+        expire_date_input.send_keys(card_expire)
+        cvv_input = locator.find_element("name=cvc")
+        cvv_input.clear()
+        cvv_input.send_keys(card_cvv)
+        name_input = locator.find_element("name=name")
+        name_input.clear()
+        name_input.send_keys("sxy sxy")
+        
+        pay_more_btn = locator.find_element("class=css-yen4e3")
+        click_interactable(pay_more_btn, driver)
+        
+        print("正在等待API响应并捕获数据...")
+        wait_and_capture(driver, 5)
+        
+        try:
+            iframe_handler.switch_to_iframe_by_path(["Airwallex 3DS wrapper iframe", "Airwallex 3DS iframe", "issuer-iframe"])
+            code_input = locator.find_element("id=challengeDataEntry")
+            code_input.clear()
+            code_input.send_keys("1234")
+            submit_btn = locator.find_element("id=submit")
+            click_interactable(submit_btn, driver)
+            print("3D认证通过")
+        except:
+            print("无需3D认证")
+        
+        wait_and_capture(driver, 5)
+        
+        driver.refresh()
+        time.sleep(0.5)
+        uuid_test = locator.find_element("class=userId")
+        full_text = uuid_test.text
+        print(f"完整文本: {full_text}")
+        print("等待 10 秒后关闭...")
+        wait_and_capture(driver, 10)
+    finally:
+        driver.quit()
 
 # 新st_more支付FOR YOU 订阅流程
 def foryou_stnewmore_subscribe(subscribe_data, card_no, card_expire, card_cvv):
-    """新st_more支付FOR YOU 订阅流程"""
-    chrome_options = Options()
-    chrome_options.add_experimental_option(
-        "mobileEmulation", 
-        {"deviceName": "iPhone 12 Pro"}
-    )
-    # 创建 driver 实例（带移动端模拟）
-    driver = webdriver.Chrome(options=chrome_options)
-    # 然后初始化 SmartLocator
+    driver = init_driver_with_logging()
     locator = SmartLocator(driver)
     iframe_handler = IFrameHandler(driver)
     driver.implicitly_wait(5)
     
-    # 访问网站
-    driver.get("https://{}".format(subscribe_data[0]))
-    #点击FOR YOU
-    profile_btn = locator.find_element("xpath=//span[text()='For You']")
-    click_interactable(profile_btn, driver)
-    #点击watch now按钮
-    subscribe_btn = locator.find_element("xpath=//span[@class='van-button__text' and text()='Watch Now']")
-    click_interactable(subscribe_btn, driver)
-    #点击屏幕
-    trigger = locator.find_element("class=trigger")
-    click_interactable(trigger, driver)
-    #选择剧集
-    episode_element = locator.find_element("xpath=//p[starts-with(text(), 'Episode')]")
-    click_interactable(episode_element, driver)
-    #点击锁按钮
-    lock_btn= locator.find_element("class=lock")
-    click_interactable(lock_btn, driver)
-    #选择订阅类型
-    subscribe_type_btn = locator.find_element("xpath=//div[@class='right-title' and text()={}]".format(repr(subscribe_data[1])))
-    click_interactable(subscribe_type_btn, driver)
-    #选择支付类型
-    subscribe_type_btn = locator.find_element("class=stripe-btn")
-    click_interactable(subscribe_type_btn, driver)
-    #填写支付信息
-    time.sleep(1)
-    card_number_input = locator.find_element("name=cardnumber")
-    card_number_input.clear()
-    card_number_input.send_keys(card_no)
-    expire_date_input = locator.find_element("name=expiry")
-    expire_date_input.clear()
-    expire_date_input.send_keys(card_expire)
-    cvv_input = locator.find_element("name=cvc")
-    cvv_input.clear()
-    cvv_input.send_keys(card_cvv)
-    name_input = locator.find_element("name=name")
-    name_input.clear()
-    name_input.send_keys("sxy sxy")
-    #提交支付
-    pay_more_btn = locator.find_element("class=css-yen4e3")
-    click_interactable(pay_more_btn, driver)
     try:
-        # 处理 3D 认证
-        iframe_handler.switch_to_iframe_by_path(["Airwallex 3DS wrapper iframe", "Airwallex 3DS iframe", "issuer-iframe"])
-        # 现在在 iframe 内，可以操作 iframe 内的元素
-        code_input = locator.find_element("id=challengeDataEntry")
-        code_input.clear()
-        code_input.send_keys("1234")
-        submit_btn = locator.find_element("id=submit")
-        click_interactable(submit_btn, driver)
-        # 切回主文档
-        # iframe_handler.switch_to.default_content()
-        print("3D认证通过")
-    except:
-        print("无需3D认证")
-    time.sleep(5)
-    driver.refresh()
-    print("等待 30 秒后关闭...")
-    time.sleep(30)
-    driver.quit()
+        driver.get("https://{}".format(subscribe_data[0]))
+        profile_btn = locator.find_element("xpath=//span[text()='For You']")
+        click_interactable(profile_btn, driver)
+        subscribe_btn = locator.find_element("xpath=//span[@class='van-button__text' and text()='Watch Now']")
+        click_interactable(subscribe_btn, driver)
+        trigger = locator.find_element("class=trigger")
+        click_interactable(trigger, driver)
+        episode_element = locator.find_element("xpath=//p[starts-with(text(), 'Episode')]")
+        click_interactable(episode_element, driver)
+        lock_btn= locator.find_element("class=lock")
+        click_interactable(lock_btn, driver)
+        subscribe_type_btn = locator.find_element("xpath=//div[@class='right-title' and text()={}]".format(repr(subscribe_data[1])))
+        click_interactable(subscribe_type_btn, driver)
+        
+        subscribe_type_btn = locator.find_element("class=stripe-btn")
+        click_interactable(subscribe_type_btn, driver)
+        
+        time.sleep(1)
+        card_number_input = locator.find_element("name=cardnumber")
+        card_number_input.clear()
+        card_number_input.send_keys(card_no)
+        expire_date_input = locator.find_element("name=expiry")
+        expire_date_input.clear()
+        expire_date_input.send_keys(card_expire)
+        cvv_input = locator.find_element("name=cvc")
+        cvv_input.clear()
+        cvv_input.send_keys(card_cvv)
+        name_input = locator.find_element("name=name")
+        name_input.clear()
+        name_input.send_keys("sxy sxy")
+        
+        pay_more_btn = locator.find_element("class=css-yen4e3")
+        click_interactable(pay_more_btn, driver)
+        
+        print("正在等待API响应并捕获数据...")
+        wait_and_capture(driver, 5)
+        
+        try:
+            iframe_handler.switch_to_iframe_by_path(["Airwallex 3DS wrapper iframe", "Airwallex 3DS iframe", "issuer-iframe"])
+            code_input = locator.find_element("id=challengeDataEntry")
+            code_input.clear()
+            code_input.send_keys("1234")
+            submit_btn = locator.find_element("id=submit")
+            click_interactable(submit_btn, driver)
+            print("3D认证通过")
+        except:
+            print("无需3D认证")
+        
+        wait_and_capture(driver, 5)
+        
+        driver.refresh()
+        print("等待 10 秒后关闭...")
+        wait_and_capture(driver, 10)
+    finally:
+        driver.quit()
 
 
 def subscribe_test(site_name='VAVA',
@@ -943,10 +881,9 @@ def subscribe_test(site_name='VAVA',
         case 2:
             foryou_card_subscribe(subscribe_data, user_email, card_no, card_expire, card_cvv)
         case 3:
-            # 注意：PayPal测试使用特定的测试邮箱
-            profile_paypal_subscribe(subscribe_data, "sx-duanjuceshi@personal.example.com")
+            profile_paypal_subscribe(subscribe_data, user_email)
         case 4:
-            foryou_paypal_subscribe(subscribe_data, "sx-duanjuceshi@personal.example.com")
+            foryou_paypal_subscribe(subscribe_data, user_email)
         case 5:
             profile_awoldmore_subscribe(subscribe_data, user_email, card_no, card_expire, card_cvv)
         case 6:
@@ -995,24 +932,4 @@ def subscribe_test_from_env():
     subscribe_test(site_name, subscribe_type, pay_type, user_email, card_no, card_expire, card_cvv)
 
 if __name__ == "__main__":
-    # 修改为调用从环境变量运行的函数
     subscribe_test_from_env()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# if __name__ == "__main__":
-#     #1-个人中心信用卡支付 2-For You信用卡支付 3-个人中心PayPal支付 4-For You PayPal支付
-#     #5-个人中心老aw_more支付 6-For You老aw_more支付 7-个人中心老st_more支付 8-For You老st_more支付
-#     #9-个人中心新aw_more支付 10-For You新aw_more支付 11-个人中心新st_more支付 12-For You新st_more支付
-#     subscribe_test('VIVI',3,5)

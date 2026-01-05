@@ -21,7 +21,7 @@
         }
         
         .container {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
             padding: 20px;
         }
@@ -45,10 +45,19 @@
         
         .main-content {
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: 350px 1fr 1fr;
             gap: 20px;
         }
         
+        @media (max-width: 1200px) {
+            .main-content {
+                grid-template-columns: 300px 1fr;
+            }
+            .api-card {
+                grid-column: 1 / -1;
+            }
+        }
+
         @media (max-width: 768px) {
             .main-content {
                 grid-template-columns: 1fr;
@@ -60,6 +69,7 @@
             border-radius: 10px;
             padding: 20px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            height: fit-content;
         }
         
         .card h2 {
@@ -67,8 +77,12 @@
             margin-bottom: 20px;
             padding-bottom: 10px;
             border-bottom: 2px solid #f0f0f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
         
+        /* 表单样式 */
         .form-group {
             margin-bottom: 15px;
         }
@@ -96,23 +110,6 @@
             border-color: #667eea;
         }
         
-        .required {
-            color: #e74c3c;
-        }
-        
-        .help-text {
-            font-size: 12px;
-            color: #888;
-            margin-top: 3px;
-            white-space: pre-line;
-        }
-        
-        .buttons {
-            display: flex;
-            gap: 10px;
-            margin-top: 20px;
-        }
-        
         .btn {
             padding: 12px 24px;
             border: none;
@@ -122,108 +119,148 @@
             transition: all 0.3s;
             display: flex;
             align-items: center;
+            justify-content: center;
             gap: 8px;
+            width: 100%;
+            margin-bottom: 10px;
+            text-decoration: none;
         }
         
-        .btn-primary {
-            background: #667eea;
-            color: white;
-        }
+        .btn-primary { background: #667eea; color: white; }
+        .btn-danger { background: #e74c3c; color: white; }
         
-        .btn-primary:hover {
-            background: #5a67d8;
-            transform: translateY(-2px);
-        }
-        
-        .btn-secondary {
-            background: #48bb78;
-            color: white;
-        }
-        
-        .btn-secondary:hover {
-            background: #38a169;
-            transform: translateY(-2px);
-        }
-        
-        .btn-danger {
-            background: #e74c3c;
-            color: white;
-        }
-        
-        .btn-danger:hover {
-            background: #c0392b;
-            transform: translateY(-2px);
-        }
-        
-        .btn-warning {
-            background: #f39c12;
-            color: white;
-        }
-        
-        .btn-warning:hover {
-            background: #d35400;
-            transform: translateY(-2px);
-        }
-        
-        .output-container {
-            position: relative;
-        }
-        
+        /* 脚本输出区域 */
         #output {
             background: #1a202c;
             color: #cbd5e0;
             padding: 15px;
             border-radius: 5px;
             min-height: 400px;
-            max-height: 500px;
+            max-height: 600px;
             overflow-y: auto;
             font-family: 'Courier New', monospace;
-            font-size: 14px;
+            font-size: 13px;
             white-space: pre-wrap;
             line-height: 1.4;
         }
         
-        #output .log-line {
+        .log-line {
             margin-bottom: 2px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            word-break: break-all;
         }
         
-        .output-controls {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            display: flex;
-            gap: 5px;
-        }
-        
-        .output-btn {
-            background: rgba(255, 255, 255, 0.1);
-            border: none;
-            color: white;
-            padding: 5px 10px;
-            border-radius: 3px;
-            cursor: pointer;
-            font-size: 12px;
-        }
-        
-        .output-btn:hover {
-            background: rgba(255, 255, 255, 0.2);
-        }
-        
-        .status-bar {
-            background: white;
+        /* API 捕获面板样式 */
+        .api-monitor {
+            background: #f8f9fa;
             border-radius: 5px;
-            padding: 10px 20px;
-            margin-top: 20px;
+            min-height: 400px;
+            max-height: 600px;
+            overflow-y: auto;
+            padding: 10px;
+        }
+
+        .api-item {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .api-header {
+            padding: 10px 15px;
+            background: #edf2f7;
+            border-bottom: 1px solid #e2e8f0;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            user-select: none; /* 防止点击时选中文本 */
         }
-        
-        .status-indicator {
+
+        .api-header:hover {
+            background: #e2e8f0;
+        }
+
+        .api-method {
+            font-weight: bold;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+
+        .api-method.POST { background: #48bb78; color: white; }
+        .api-method.GET { background: #4299e1; color: white; }
+
+        .api-url {
+            flex: 1;
+            margin: 0 10px;
+            font-family: monospace;
+            font-size: 13px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            color: #2d3748;
+        }
+
+        .api-status {
+            font-weight: bold;
+            font-size: 13px;
+        }
+
+        .api-status.success { color: #48bb78; }
+        .api-status.error { color: #e53e3e; }
+
+        .api-details {
+            padding: 15px;
+            display: none;
+            background: #fff;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .api-details.open {
+            display: block;
+        }
+
+        .detail-section {
+            margin-bottom: 15px;
+        }
+
+        .detail-title {
+            font-size: 12px;
+            font-weight: bold;
+            color: #718096;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+        }
+
+        .json-box {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 12px;
+            white-space: pre-wrap;
+            overflow-x: auto;
+        }
+
+        .empty-api {
+            text-align: center;
+            padding: 40px;
+            color: #a0aec0;
+        }
+
+        .status-bar {
+            grid-column: 1 / -1;
+            background: white;
+            border-radius: 5px;
+            padding: 10px 20px;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
         }
         
         .status-dot {
@@ -243,1594 +280,299 @@
             50% { opacity: 0.5; }
             100% { opacity: 1; }
         }
-        
-        .footer {
-            text-align: center;
-            margin-top: 20px;
-            color: white;
-            font-size: 14px;
-        }
-        
-        .footer a {
-            color: white;
-            text-decoration: none;
-        }
-        
-        .footer a:hover {
-            text-decoration: underline;
-        }
-        .current-values-panel {
-            margin-bottom: 20px;
-            background: #f8f9fa;
-        }
 
-        .values-list {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-            gap: 10px;
-        }
-
-        .value-item {
-            padding: 8px 12px;
-            background: white;
-            border-radius: 5px;
-            border-left: 3px solid #667eea;
-        }
-
-        .value-name {
-            font-weight: bold;
-            color: #555;
-            margin-right: 10px;
-        }
-
-        .value-content {
-            color: #333;
-            font-family: monospace;
-        }
-
-        .output-info {
-            color: #888;
-            font-size: 12px;
-            margin-left: 10px;
-            font-style: italic;
-        }
-
-        .output-controls {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            flex-wrap: wrap;
-            margin-bottom: 10px;
-        }
-
-        #output {
-            background: #1a202c;
-            color: #cbd5e0;
-            padding: 15px;
-            border-radius: 5px;
-            min-height: 400px;
-            max-height: 500px;
-            overflow-y: auto;
-            font-family: 'Courier New', monospace;
-            font-size: 14px;
-            white-space: pre-wrap;
-            line-height: 1.4;
-            transition: all 0.3s;
-        }
-
-        .log-line {
-            margin-bottom: 2px;
-            padding: 2px 5px;
-            border-radius: 2px;
-        }
-
-        .log-line:hover {
-            background: rgba(255, 255, 255, 0.05);
-        }
-
-        /* 不同类型日志的样式 */
-        .log-line.info {
-            color: #cbd5e0;
-        }
-
-        .log-line.success {
-            color: #68d391;
-        }
-
-        .log-line.error {
-            color: #fc8181;
-        }
-
-        .log-line.warning {
-            color: #f6ad55;
-        }
-
-        .log-line.debug {
-            color: #63b3ed;
-            opacity: 0.8;
-        }
-
-        /* 时间戳样式 */
-        .timestamp {
-            color: #718096;
-            font-size: 12px;
-            margin-right: 10px;
-        }
-
-        /* 高亮搜索到的文本 */
-        .highlight {
-            background-color: #f6e05e;
-            color: #1a202c;
-            padding: 0 2px;
-            border-radius: 2px;
-        }
-
-        .output-filter {
-            display: flex;
-            gap: 10px;
-            margin: 10px 0;
-        }
-
-        .output-filter select,
-        .output-filter input {
-            padding: 5px 10px;
-            border: 1px solid #ddd;
-            border-radius: 3px;
-            background: white;
-        }
-
-        .output-filter input {
-            flex-grow: 1;
-        }
-        .output-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-        }
-        
-        .output-header h2 {
-            margin: 0;
-        }
-        
-        .output-controls {
-            display: flex;
-            gap: 8px;
-            align-items: center;
-        }
-        
-        .output-btn {
-            background: #667eea;
-            color: white;
-            border: none;
-            padding: 8px 12px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 14px;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            transition: background 0.3s;
-        }
-        
-        .output-btn:hover {
-            background: #5a67d8;
-        }
-        
-        .output-btn.btn-danger {
-            background: #e74c3c;
-        }
-        
-        .output-btn.btn-danger:hover {
-            background: #c0392b;
-        }
-        
-        .output-btn.btn-success {
-            background: #48bb78;
-        }
-        
-        .output-btn.btn-success:hover {
-            background: #38a169;
-        }
-        
-        .output-btn.btn-warning {
-            background: #f39c12;
-        }
-        
-        .output-btn.btn-warning:hover {
-            background: #d35400;
-        }
-        
-        .output-info-bar {
-            background: #f8f9fa;
-            padding: 8px 12px;
-            border-radius: 4px;
-            margin-bottom: 10px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 12px;
-            color: #666;
-        }
-        
-        .output-stats {
-            display: flex;
-            gap: 15px;
-            align-items: center;
-        }
-        
-        .scroll-controls {
-            display: flex;
-            gap: 5px;
-        }
-        
-        .scroll-btn {
-            background: #e9ecef;
-            border: 1px solid #dee2e6;
-            color: #495057;
-            padding: 4px 8px;
-            border-radius: 3px;
-            cursor: pointer;
+        .copy-btn {
+            float: right;
+            padding: 2px 8px;
             font-size: 11px;
-        }
-        
-        .scroll-btn:hover {
-            background: #dee2e6;
-        }
-        
-        .scroll-mode {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            font-size: 12px;
-        }
-        
-        .scroll-mode-toggle {
-            position: relative;
-            width: 40px;
-            height: 20px;
-        }
-        
-        .scroll-mode-checkbox {
-            display: none;
-        }
-        
-        .scroll-mode-slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: #ccc;
-            transition: .4s;
-            border-radius: 20px;
-        }
-        
-        .scroll-mode-slider:before {
-            position: absolute;
-            content: "";
-            height: 16px;
-            width: 16px;
-            left: 2px;
-            bottom: 2px;
-            background-color: white;
-            transition: .4s;
-            border-radius: 50%;
-        }
-        
-        .scroll-mode-checkbox:checked + .scroll-mode-slider {
-            background-color: #48bb78;
-        }
-        
-        .scroll-mode-checkbox:checked + .scroll-mode-slider:before {
-            transform: translateX(20px);
-        }
-        
-        /* 输出区域样式 */
-        #output {
-            background: #1a202c;
-            color: #cbd5e0;
-            padding: 15px;
-            border-radius: 5px;
-            min-height: 400px;
-            max-height: 500px;
-            overflow-y: auto;
-            font-family: 'Courier New', monospace;
-            font-size: 14px;
-            white-space: pre-wrap;
-            line-height: 1.4;
-        }
-        
-        .log-line {
-            margin-bottom: 3px;
-            padding: 2px 0;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-        }
-        
-        .log-line:hover {
-            background: rgba(255, 255, 255, 0.05);
-        }
-        
-        .log-line.info {
-            color: #cbd5e0;
-        }
-        
-        .log-line.success {
-            color: #68d391;
-        }
-        
-        .log-line.error {
-            color: #fc8181;
-        }
-        
-        .log-line.warning {
-            color: #f6ad55;
-        }
-        
-        .log-line.debug {
-            color: #63b3ed;
-        }
-        
-        .timestamp {
-            color: #718096;
-            font-size: 12px;
-            margin-right: 10px;
-        }
-        
-        .new-line-indicator {
-            background: rgba(56, 161, 105, 0.1);
-            border-left: 3px solid #48bb78;
-            animation: highlight 2s ease-out;
-        }
-        
-        @keyframes highlight {
-            0% { background: rgba(56, 161, 105, 0.3); }
-            100% { background: rgba(56, 161, 105, 0.1); }
-        }
-        
-        /* 滚动条样式 */
-        #output::-webkit-scrollbar {
-            width: 8px;
-        }
-        
-        #output::-webkit-scrollbar-track {
-            background: #2d3748;
-            border-radius: 4px;
-        }
-        
-        #output::-webkit-scrollbar-thumb {
             background: #4a5568;
-            border-radius: 4px;
-        }
-        
-        #output::-webkit-scrollbar-thumb:hover {
-            background: #718096;
-        }
-        
-        /* 顶部固定按钮 */
-        .scroll-top-btn {
-            position: absolute;
-            bottom: 15px;
-            right: 15px;
-            background: rgba(102, 126, 234, 0.8);
             color: white;
             border: none;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            cursor: pointer;
-            display: none;
-            align-items: center;
-            justify-content: center;
-            font-size: 18px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-            z-index: 100;
-        }
-        
-        .scroll-top-btn:hover {
-            background: #667eea;
-        }
-        
-        .scroll-bottom-btn {
-            position: absolute;
-            bottom: 65px;
-            right: 15px;
-            background: rgba(102, 126, 234, 0.8);
-            color: white;
-            border: none;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            cursor: pointer;
-            display: none;
-            align-items: center;
-            justify-content: center;
-            font-size: 18px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-            z-index: 100;
-        }
-        
-        .scroll-bottom-btn:hover {
-            background: #667eea;
-        }
-        
-        /* 搜索高亮 */
-        .highlight {
-            background-color: #f6e05e;
-            color: #1a202c;
-            padding: 0 2px;
-            border-radius: 2px;
-        }
-        
-        /* 过滤控件 */
-        .output-filters {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 10px;
-            flex-wrap: wrap;
-        }
-        
-        .filter-group {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-        
-        .filter-group label {
-            font-size: 12px;
-            color: #666;
-        }
-        
-        .filter-select {
-            padding: 5px 10px;
-            border: 1px solid #ddd;
             border-radius: 3px;
-            background: white;
-            font-size: 12px;
+            cursor: pointer;
         }
-        
-        .search-input {
-            padding: 5px 10px;
-            border: 1px solid #ddd;
-            border-radius: 3px;
-            flex-grow: 1;
-            min-width: 200px;
-            font-size: 12px;
-        }
-        
-        /* 清空确认弹窗 */
-        .confirm-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0,0,0,0.5);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-        }
-        
-        .confirm-dialog {
-            background: white;
-            padding: 25px;
-            border-radius: 8px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-            max-width: 400px;
-            width: 90%;
-        }
-        
-        .confirm-dialog h3 {
-            margin-top: 0;
-            color: #333;
-        }
-        
-        .confirm-dialog p {
-            margin-bottom: 20px;
-            color: #666;
-        }
-        
-        .confirm-buttons {
-            display: flex;
-            justify-content: flex-end;
-            gap: 10px;
-        }
-        .paypal-hint {
-            display: none;
-            background: #f0f9ff;
-            border-left: 4px solid #0070ba;
-            padding: 10px 15px;
-            margin-top: 10px;
-            border-radius: 4px;
-            font-size: 14px;
-            color: #005ea6;
-        }
-        
-        .paypal-hint i {
-            margin-right: 8px;
-            color: #0070ba;
-        }
-        
-        .paypal-hint strong {
-            color: #003366;
-        }
-        
-        /* 提示信息 */
-        .field-hint {
-            font-size: 12px;
-            color: #6c757d;
-            margin-top: 3px;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-        
-        .field-hint i {
-            color: #0070ba;
-        }
-        
-        /* PayPal类型时的输入框样式（只是提示，不禁用） */
-        .paypal-email-input {
-            background-color: #f8fafc;
-            border-color: #cbd5e0;
-        }
-        
-        .paypal-email-input:focus {
-            border-color: #0070ba;
-            box-shadow: 0 0 0 3px rgba(0, 112, 186, 0.1);
-        }
-        
-        /* 推荐值样式 */
-        .suggested-value {
-            color: #0070ba;
-            font-weight: bold;
-        }
+        .copy-btn:hover { background: #2d3748; }
     </style>
 </head>
 <body>
-<!-- 清空确认弹窗 -->
-    <div class="confirm-overlay" id="confirmOverlay">
-        <div class="confirm-dialog">
-            <h3><i class="fas fa-exclamation-triangle"></i> 确认清空</h3>
-            <p>确定要清空所有输出内容吗？此操作不可恢复。</p>
-            <div class="confirm-buttons">
-                <button class="output-btn" onclick="hideConfirm()">
-                    <i class="fas fa-times"></i> 取消
-                </button>
-                <button class="output-btn btn-danger" onclick="confirmClearOutput()">
-                    <i class="fas fa-trash"></i> 确认清空
-                </button>
-            </div>
-        </div>
-    </div>
-
     <div class="container">
         <div class="header">
             <h1><i class="fas fa-code"></i> 测试脚本控制器</h1>
-            <p>配置变量并运行自动化测试脚本</p>
+            <p>配置变量并运行自动化测试脚本，实时监控 API 交互</p>
         </div>
         
         <div class="main-content">
-            <!-- 左侧变量配置部分保持不变 -->
+            <!-- 1. 变量配置 -->
             <div class="card">
                 <h2><i class="fas fa-sliders-h"></i> 变量配置</h2>
                 <form id="testForm" action="/run" method="POST">
                     {% for var in variables %}
-                    <div class="form-group" id="form-group-{{ var.name }}">
+                    <div class="form-group">
                         <label>
                             {{ var.label }}
-                            {% if var.required %}<span class="required">*</span>{% endif %}
+                            {% if var.required %}<span style="color:red">*</span>{% endif %}
                         </label>
                         <input type="{{ var.type }}" 
                             name="{{ var.name }}" 
-                            id="input-{{ var.name }}"
                             value="{{ var.value if var.value else var.default }}"
-                            {% if var.required %}required{% endif %}
-                            placeholder="输入 {{ var.label }}"
-                            {% if var.name == 'user_email' %}onfocus="handleEmailFocus()"{% endif %}
-                            {% if var.name == 'pay_type' %}onchange="handlePayTypeChange()"{% endif %}>
+                            placeholder="输入 {{ var.label }}">
                         {% if var.description %}
-                        <div class="help-text">{{ var.description }}</div>
-                        {% endif %}
-                        <!-- PayPal提示信息（初始隐藏） -->
-                        {% if var.name == 'user_email' %}
-                        <div class="paypal-hint" id="paypalHint">
-                            <i class="fas fa-info-circle"></i>
-                            <span>PayPal支付推荐使用测试邮箱：<span class="suggested-value">sx-duanjuceshi@personal.example.com</span></span>
-                        </div>
-                        <div class="field-hint" id="emailHint">
-                            <i class="fas fa-lightbulb"></i>
-                            <span>用于支付测试的用户邮箱</span>
-                        </div>
+                        <div style="font-size:12px;color:#888">{{ var.description }}</div>
                         {% endif %}
                     </div>
                     {% endfor %}
                     
-                    <div class="buttons">
-                        <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-play"></i> 运行测试
-                        </button>
-                        <a href="/stop" class="btn btn-danger">
-                            <i class="fas fa-stop"></i> 停止测试
-                        </a>
-                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-play"></i> 运行测试
+                    </button>
+                    <a href="/stop" class="btn btn-danger">
+                        <i class="fas fa-stop"></i> 停止测试
+                    </a>
                 </form>
             </div>
             
-            <!-- 右侧输出部分优化 -->
-            <div class="card output-container">
-                <div class="output-header">
-                    <h2><i class="fas fa-terminal"></i> 脚本输出</h2>
-                    <div class="output-controls">
-                        <button class="output-btn btn-success" onclick="refreshOutput()" title="刷新输出">
-                            <i class="fas fa-sync-alt"></i> 刷新
-                        </button>
-                        <button class="output-btn btn-warning" onclick="pauseAutoRefresh()" id="pauseBtn" title="暂停自动刷新">
-                            <i class="fas fa-pause"></i> 暂停
-                        </button>
-                        <button class="output-btn btn-danger" onclick="showConfirm()" title="清空所有输出">
-                            <i class="fas fa-trash"></i> 清空
-                        </button>
-                    </div>
-                </div>
-                
-                <!-- 过滤控件 -->
-                <div class="output-filters">
-                    <div class="filter-group">
-                        <label>日志级别:</label>
-                        <select class="filter-select" id="logLevelFilter" onchange="filterOutput()">
-                            <option value="all">全部</option>
-                            <option value="success">成功</option>
-                            <option value="info">信息</option>
-                            <option value="warning">警告</option>
-                            <option value="error">错误</option>
-                            <option value="debug">调试</option>
-                        </select>
-                    </div>
-                    <input type="text" class="search-input" id="searchFilter" 
-                           placeholder="搜索关键词..." oninput="filterOutput()">
-                </div>
-                
-                <!-- 信息栏 -->
-                <div class="output-info-bar">
-                    <div class="output-stats">
-                        <span id="lineCount">共 0 行</span>
-                        <span id="filteredCount">显示 0 行</span>
-                        <span id="lastUpdate">上次更新: --:--:--</span>
-                    </div>
-                    <div class="scroll-controls">
-                        <div class="scroll-mode">
-                            <span>自动滚动:</span>
-                            <label class="scroll-mode-toggle">
-                                <input type="checkbox" class="scroll-mode-checkbox" id="autoScrollToggle" checked>
-                                <span class="scroll-mode-slider"></span>
-                            </label>
-                        </div>
-                        <button class="scroll-btn" onclick="scrollToTop()" title="滚动到顶部">
-                            <i class="fas fa-chevron-up"></i>
-                        </button>
-                        <button class="scroll-btn" onclick="scrollToBottom()" title="滚动到底部">
-                            <i class="fas fa-chevron-down"></i>
-                        </button>
-                    </div>
-                </div>
-                
-                <!-- 输出区域 -->
-                <div id="output" onscroll="handleScroll()">
-                    {% for line in output %}
-                    <div class="log-line info">{{ line }}</div>
-                    {% endfor %}
-                </div>
-                
-                <!-- 浮动按钮 -->
-                <button class="scroll-top-btn" id="scrollTopBtn" onclick="scrollToTop()">
-                    <i class="fas fa-chevron-up"></i>
-                </button>
-                <button class="scroll-bottom-btn" id="scrollBottomBtn" onclick="scrollToBottom()">
-                    <i class="fas fa-chevron-down"></i>
-                </button>
+            <!-- 2. 脚本日志 -->
+            <div class="card">
+                <h2>
+                    <span><i class="fas fa-terminal"></i> 脚本日志</span>
+                    <button onclick="clearOutput()" style="font-size:12px;padding:4px 8px;cursor:pointer">清空</button>
+                </h2>
+                <div id="output"></div>
             </div>
-        </div>
 
-        <!-- 底部状态栏保持不变 -->
-        <div class="status-bar">
-            <div class="status-indicator">
+            <!-- 3. API 监控面板 -->
+            <div class="card api-card">
+                <h2>
+                    <span><i class="fas fa-network-wired"></i> 接口捕获 (最新)</span>
+                    <span id="apiStatus" style="font-size:12px;color:#666;font-weight:normal">监听中...</span>
+                </h2>
+                <div id="apiMonitor" class="api-monitor">
+                    <div class="empty-api">
+                        <i class="fas fa-search" style="font-size:24px;margin-bottom:10px"></i>
+                        <p>等待捕获接口请求...</p>
+                        <p style="font-size:12px">监听接口: api/subscribe/create, check-payment-url</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="status-bar">
                 <div class="status-dot" id="statusDot"></div>
                 <span id="statusText">就绪</span>
-            </div>
-            <div class="status-buttons">
-                <a href="/reset_values" class="btn btn-warning btn-sm">
-                    <i class="fas fa-eraser"></i> 清除用户值
-                </a>
-                <a href="/reset_variables" class="btn btn-warning btn-sm">
-                    <i class="fas fa-redo"></i> 重置变量
-                </a>
             </div>
         </div>
     </div>
 
     <script>
-        // PayPal测试邮箱常量
-        const PAYPAL_TEST_EMAIL = 'sx-duanjuceshi@personal.example.com';
-        const DEFAULT_USER_EMAIL = '2985084405su@gmail.com';
+        let lastOutputLength = 0;
+        let isRunning = false;
+        let cardUniqueIdCounter = 0; // 全局计数器，确保ID唯一
+        const processedApiSet = new Set(); // 用于去重的内容签名集合
         
-        // PayPal支付类型
-        const PAYPAL_PROFILE_TYPE = 3;  // 个人中心PayPal
-        const PAYPAL_FORYOU_TYPE = 4;   // For You PayPal
-        
-        // 记录当前的支付类型
-        let currentPayType = null;
-                let autoScrollEnabled = true;
-        let isScrollingProgrammatically = false;
-        let lastScrollPosition = 0;
-        let outputLines = [];
-        let autoRefreshInterval = 3000; // 3秒刷新一次
-        let refreshInterval;
-        let filteredLines = [];
-        let lastLineCount = 0;
-        let isUserScrolling = false;
-        let scrollTimeout;
-        let currentSearch = '';
-        let currentLevel = 'all';
-        
-        // 处理支付类型变化
-        function handlePayTypeChange() {
-            const payTypeInput = document.getElementById('input-pay_type');
-            const emailInput = document.getElementById('input-user_email');
-            const paypalHint = document.getElementById('paypalHint');
-            const emailHint = document.getElementById('emailHint');
-            
-            if (!payTypeInput || !emailInput) return;
-            
-            const payType = parseInt(payTypeInput.value) || 0;
-            currentPayType = payType;
-            
-            const isPayPalType = (payType === PAYPAL_PROFILE_TYPE || payType === PAYPAL_FORYOU_TYPE);
-            
-            if (isPayPalType) {
-                // PayPal支付类型，显示推荐邮箱
-                if (paypalHint) {
-                    paypalHint.style.display = 'block';
-                }
-                
-                // 更新提示文本
-                if (emailHint) {
-                    const payTypeText = payType === PAYPAL_PROFILE_TYPE ? '个人中心PayPal' : 'For You PayPal';
-                    emailHint.innerHTML = `<i class="fas fa-lightbulb"></i><span>${payTypeText}支付推荐使用专用测试邮箱</span>`;
-                }
-                
-                // 设置输入框提示样式
-                emailInput.classList.add('paypal-email-input');
-                emailInput.placeholder = `建议使用 ${PAYPAL_TEST_EMAIL}`;
-                
-                // 如果当前邮箱是默认邮箱，自动替换为PayPal测试邮箱
-                if (emailInput.value === '' || emailInput.value === DEFAULT_USER_EMAIL) {
-                    emailInput.value = PAYPAL_TEST_EMAIL;
-                }
-                
-                // 显示建议使用PayPal测试邮箱的提示
-                showPayPalEmailSuggestion();
-            } else {
-                // 非PayPal支付类型
-                if (paypalHint) {
-                    paypalHint.style.display = 'none';
-                }
-                
-                // 恢复提示文本
-                if (emailHint) {
-                    emailHint.innerHTML = `<i class="fas fa-lightbulb"></i><span>用于支付测试的用户邮箱</span>`;
-                }
-                
-                // 移除输入框提示样式
-                emailInput.classList.remove('paypal-email-input');
-                emailInput.placeholder = '输入用户邮箱';
-                
-                // 如果当前邮箱是PayPal测试邮箱且为空或需要重置，恢复默认
-                if (emailInput.value === PAYPAL_TEST_EMAIL && emailInput.value.trim() === PAYPAL_TEST_EMAIL) {
-                    // 只有当邮箱完全是PayPal测试邮箱时才恢复默认
-                    emailInput.value = DEFAULT_USER_EMAIL;
-                }
-            }
-        }
-        
-        // 处理邮箱输入框获取焦点
-        function handleEmailFocus() {
-            const payTypeInput = document.getElementById('input-pay_type');
-            if (!payTypeInput) return;
-            
-            const payType = parseInt(payTypeInput.value) || 0;
-            const isPayPalType = (payType === PAYPAL_PROFILE_TYPE || payType === PAYPAL_FORYOU_TYPE);
-            
-            if (isPayPalType) {
-                // 如果当前是PayPal类型且邮箱为空或是默认值，显示建议
-                const emailInput = document.getElementById('input-user_email');
-                if (!emailInput) return;
-                
-                if (emailInput.value === '' || emailInput.value === DEFAULT_USER_EMAIL || emailInput.value === PAYPAL_TEST_EMAIL) {
-                    // 短暂显示建议值
-                    showPayPalEmailSuggestion();
-                }
-            }
-        }
-        
-        // 显示PayPal邮箱建议
-        function showPayPalEmailSuggestion() {
-            // 只在需要时显示，不干扰用户
-            setTimeout(() => {
-                const emailInput = document.getElementById('input-user_email');
-                if (!emailInput) return;
-                
-                // 检查是否已经在显示建议或用户正在输入
-                if (emailInput === document.activeElement) return;
-                
-                const currentValue = emailInput.value.trim();
-                if (currentValue === '' || currentValue === DEFAULT_USER_EMAIL) {
-                    // 显示建议但不自动填充
-                    showTempAlert(`建议使用PayPal测试邮箱: ${PAYPAL_TEST_EMAIL}`, 'info');
-                }
-            }, 500);
-        }
-        
-        // 显示临时提示
-        function showTempAlert(message, type = 'info') {
-            // 移除已存在的提示
-            const existingAlert = document.querySelector('.temp-alert');
-            if (existingAlert) {
-                existingAlert.remove();
-            }
-            
-            const alertDiv = document.createElement('div');
-            alertDiv.className = `temp-alert alert-${type}`;
-            alertDiv.style.cssText = `
-                position: fixed;
-                top: 20px;
-                right: 20px;
-                padding: 12px 20px;
-                border-radius: 4px;
-                background: ${type === 'warning' ? '#fff3cd' : '#d1ecf1'};
-                color: ${type === 'warning' ? '#856404' : '#0c5460'};
-                border: 1px solid ${type === 'warning' ? '#ffeaa7' : '#bee5eb'};
-                z-index: 9999;
-                box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-                animation: slideIn 0.3s ease-out;
-                max-width: 400px;
-            `;
-            
-            alertDiv.innerHTML = `
-                <i class="fas fa-${type === 'warning' ? 'exclamation-triangle' : 'info-circle'}" 
-                   style="margin-right: 8px;"></i>
-                ${message}
-            `;
-            
-            document.body.appendChild(alertDiv);
-            
-            // 5秒后自动消失
-            setTimeout(() => {
-                if (alertDiv.parentNode) {
-                    alertDiv.style.animation = 'slideOut 0.3s ease-out';
-                    setTimeout(() => {
-                        if (alertDiv.parentNode) {
-                            document.body.removeChild(alertDiv);
-                        }
-                    }, 300);
-                }
-            }, 5000);
-        }
-        
-        // 初始化支付类型检查
-        function initPayTypeCheck() {
-            const payTypeInput = document.getElementById('input-pay_type');
-            if (payTypeInput) {
-                // 触发一次初始检查
-                setTimeout(() => {
-                    handlePayTypeChange();
-                }, 100);
-            }
-        }
-        
-        // ==================== 表单处理 ====================
-        
-        // 表单提交前检查
-        document.getElementById('testForm')?.addEventListener('submit', function(e) {
-            const payTypeInput = document.getElementById('input-pay_type');
-            const emailInput = document.getElementById('input-user_email');
-            
-            if (!payTypeInput || !emailInput) return;
-            
-            const payType = parseInt(payTypeInput.value) || 0;
-            const isPayPalType = (payType === PAYPAL_PROFILE_TYPE || payType === PAYPAL_FORYOU_TYPE);
-            const userEmail = emailInput.value.trim();
-            
-            if (isPayPalType) {
-                // PayPal支付类型，检查邮箱
-                if (!userEmail) {
-                    e.preventDefault();
-                    showTempAlert('请输入PayPal测试邮箱', 'warning');
-                    emailInput.focus();
-                    return;
-                }
-                
-                // 如果不是推荐的测试邮箱，给出提示但不阻止提交
-                if (userEmail !== PAYPAL_TEST_EMAIL) {
-                    const confirmMsg = `您使用的是自定义邮箱 "${userEmail}"，PayPal支付推荐使用测试邮箱 "${PAYPAL_TEST_EMAIL}"，是否继续？`;
-                    if (!confirm(confirmMsg)) {
-                        e.preventDefault();
-                        return;
-                    }
-                }
-            }
-            
-            // 可以在这里添加其他表单验证逻辑
-            console.log('表单提交，支付类型：', payType, '邮箱：', userEmail);
-        });
-        
-        // ==================== 页面初始化 ====================
-        
-        document.addEventListener('DOMContentLoaded', function() {
-            // 初始化支付类型检查
-            initPayTypeCheck();
-            
-            // 监听邮箱输入框的变化，提供实时反馈
-            const emailInput = document.getElementById('input-user_email');
-            if (emailInput) {
-                emailInput.addEventListener('input', function() {
-                    const payTypeInput = document.getElementById('input-pay_type');
-                    if (!payTypeInput) return;
-                    
-                    const payType = parseInt(payTypeInput.value) || 0;
-                    const isPayPalType = (payType === PAYPAL_PROFILE_TYPE || payType === PAYPAL_FORYOU_TYPE);
-                    
-                    if (isPayPalType) {
-                        const currentEmail = this.value.trim();
-                        if (currentEmail === PAYPAL_TEST_EMAIL) {
-                            // 用户输入了推荐的邮箱
-                            this.style.borderColor = '#48bb78';
-                            this.style.boxShadow = '0 0 0 3px rgba(72, 187, 120, 0.1)';
-                        } else {
-                            // 用户输入了其他邮箱
-                            this.style.borderColor = '#f39c12';
-                            this.style.boxShadow = '0 0 0 3px rgba(243, 156, 18, 0.1)';
-                        }
-                    }
-                });
-                
-                // 输入框失去焦点时恢复样式
-                emailInput.addEventListener('blur', function() {
-                    this.style.borderColor = '';
-                    this.style.boxShadow = '';
-                });
-            }
-            
-            // 添加CSS动画
-            const style = document.createElement('style');
-            style.textContent = `
-                @keyframes slideIn {
-                    from { transform: translateX(100%); opacity: 0; }
-                    to { transform: translateX(0); opacity: 1; }
-                }
-                
-                @keyframes slideOut {
-                    from { transform: translateX(0); opacity: 1; }
-                    to { transform: translateX(100%); opacity: 0; }
-                }
-                
-                /* 邮箱输入框的过渡效果 */
-                input[type="text"] {
-                    transition: all 0.3s ease;
-                }
-                
-                /* 推荐邮箱的样式 */
-                .recommended-email {
-                    color: #0070ba;
-                    font-weight: 500;
-                }
-            `;
-            document.head.appendChild(style);
-        });
-        
-        // ==================== 辅助函数 ====================
-        
-        // 设置推荐值（但不强制）
-        function setSuggestedEmail() {
-            const emailInput = document.getElementById('input-user_email');
-            if (!emailInput) return;
-            
-            // 只在邮箱为空或是默认值时设置推荐值
-            const currentValue = emailInput.value.trim();
-            if (currentValue === '' || currentValue === DEFAULT_USER_EMAIL) {
-                emailInput.value = PAYPAL_TEST_EMAIL;
-                showTempAlert('已自动填充PayPal测试邮箱', 'info');
-            }
-        }
-        
-        // 一键使用推荐邮箱
-        function useRecommendedEmail() {
-            const emailInput = document.getElementById('input-user_email');
-            if (emailInput) {
-                emailInput.value = PAYPAL_TEST_EMAIL;
-                showTempAlert('已使用推荐PayPal测试邮箱', 'success');
-            }
-        }
-        
-        // 添加一个快速设置按钮到提示区域
-        function addQuickSetButton() {
-            const paypalHint = document.getElementById('paypalHint');
-            if (paypalHint) {
-                const quickBtn = document.createElement('button');
-                quickBtn.innerHTML = '<i class="fas fa-bolt"></i> 使用推荐邮箱';
-                quickBtn.style.cssText = `
-                    margin-left: 10px;
-                    padding: 4px 8px;
-                    background: #0070ba;
-                    color: white;
-                    border: none;
-                    border-radius: 3px;
-                    font-size: 12px;
-                    cursor: pointer;
-                    transition: background 0.3s;
-                `;
-                quickBtn.onmouseover = function() {
-                    this.style.background = '#005ea6';
-                };
-                quickBtn.onmouseout = function() {
-                    this.style.background = '#0070ba';
-                };
-                quickBtn.onclick = function(e) {
-                    e.preventDefault();
-                    useRecommendedEmail();
-                };
-                
-                paypalHint.appendChild(quickBtn);
-            }
-        }
-        
-        // 延迟添加快速设置按钮
-        setTimeout(addQuickSetButton, 1000);
-
-        
-        function scrollToBottom() {
-            const output = document.getElementById('output');
-            output.scrollTop = output.scrollHeight;
-        }
-        
-        function clearOutput() {
-            document.getElementById('output').innerHTML = '';
-        }
+        // 自动刷新
+        setInterval(refreshOutput, 2000);
         
         function refreshOutput() {
             fetch('/get_output')
                 .then(response => response.json())
                 .then(data => {
                     const outputDiv = document.getElementById('output');
-                    outputDiv.innerHTML = data.output ? data.output.split('\n').map(line => 
-                        `<div class="log-line">${line}</div>`
-                    ).join('') : '暂无输出';
-                    scrollToBottom();
-                });
-        }
-        
-        function updateStatus() {
-            fetch('/get_output')
-                .then(response => response.json())
-                .then(data => {
+                    
+                    // 只有当总行数增加时才进行处理
+                    if (data.total_lines > lastOutputLength) {
+                        const allLines = data.output.split('\n');
+                        
+                        // 计算新增了多少行
+                        const newLinesCount = data.total_lines - lastOutputLength;
+                        
+                        // 1. 处理 API 数据 (仅处理新增的行，防止重复渲染)
+                        // 如果新增行数大于当前返回的buffer大小，说明有丢包，但我们只处理当前能看到的
+                        let linesToProcess = [];
+                        if (newLinesCount >= allLines.length) {
+                            linesToProcess = allLines;
+                        } else {
+                            linesToProcess = allLines.slice(-newLinesCount);
+                        }
+
+                        // 仅在新增行中查找 API 数据
+                        linesToProcess.forEach(line => {
+                            if (line.includes('__API_CAPTURE__|')) {
+                                processApiData(line);
+                            }
+                        });
+                        
+                        // 2. 更新日志显示 (全量更新显示，因为innerHTML替换比追加更简单且不容易出错)
+                        // 过滤掉 API JSON 数据行，只显示普通日志
+                        const logHtml = allLines.map(line => {
+                            if (line.includes('__API_CAPTURE__|')) {
+                                return ''; 
+                            }
+                            return `<div class="log-line">${line}</div>`;
+                        }).join('');
+                        
+                        outputDiv.innerHTML = logHtml;
+                        outputDiv.scrollTop = outputDiv.scrollHeight;
+                        
+                        // 更新指针
+                        lastOutputLength = data.total_lines;
+                    }
+                    
+                    // 更新状态指示器
                     const statusDot = document.getElementById('statusDot');
                     const statusText = document.getElementById('statusText');
                     
-                    if (data.output && data.output.includes('开始运行测试脚本')) {
+                    if (data.output && data.output.includes('开始运行测试脚本') && !data.output.includes('脚本执行完成')) {
                         statusDot.className = 'status-dot running';
                         statusText.textContent = '运行中';
-                    } else {
+                        isRunning = true;
+                    } else if (data.output && data.output.includes('脚本执行完成')) {
                         statusDot.className = 'status-dot';
-                        statusText.textContent = '就绪';
+                        statusText.textContent = '执行完成';
+                        isRunning = false;
                     }
                 });
         }
-        
-        document.addEventListener('DOMContentLoaded', function() {
-            scrollToBottom();
-            
-            setInterval(() => {
-                refreshOutput();
-                updateStatus();
-            }, 5000);
-        });
-        
-        function showHelp() {
-            alert('使用说明：\n1. 在左侧配置测试变量\n2. 点击"运行测试"开始执行\n3. 右侧查看实时输出');
-        }
-        
-        function showAbout() {
-            alert('测试脚本控制器 v1.0\n\n这是一个用于控制自动化测试脚本的Web界面，支持实时输出监控。');
-        }
 
-        function updateCurrentValues() {
-            const form = document.getElementById('testForm');
-            if (!form) return;
-            
-            const inputs = form.querySelectorAll('input, select, textarea');
-            const valuesPanel = document.querySelector('.values-list');
-            
-            if (valuesPanel) {
-                let html = '';
-                inputs.forEach(input => {
-                    const label = input.labels?.[0]?.textContent || input.name;
-                    let value = input.value;
-                    
-                    if (input.type === 'checkbox' || input.type === 'radio') {
-                        value = input.checked ? input.value : '';
-                    }
-                    
-                    if (label && label !== '*') {
-                        html += `
-                        <div class="value-item">
-                            <span class="value-name">${label.replace('*', '').trim()}:</span>
-                            <span class="value-content">${value || '(空)'}</span>
-                        </div>`;
-                    }
-                });
-                valuesPanel.innerHTML = html;
-            }
-        }
-
-        document.addEventListener('DOMContentLoaded', function() {
-            const form = document.getElementById('testForm');
-            if (form) {
-                form.addEventListener('input', updateCurrentValues);
-                form.addEventListener('change', updateCurrentValues);
-            }
-            
-            updateCurrentValues();
-        });
-
-        
-
-        // 初始化
-        document.addEventListener('DOMContentLoaded', function() {
-            // 初始化输出区域
-            outputLines = Array.from(document.querySelectorAll('#output .log-line')).map(line => ({
-                text: line.textContent,
-                element: line,
-                visible: true
-            }));
-            updateStats();
-            
-            // 设置自动刷新
-            startAutoRefresh();
-            
-            // 设置自动滚动开关
-            const autoScrollToggle = document.getElementById('autoScrollToggle');
-            autoScrollToggle.checked = autoScrollEnabled;
-            autoScrollToggle.addEventListener('change', function() {
-                autoScrollEnabled = this.checked;
-                saveUserPreference();
-            });
-            
-            // 保存用户偏好
-            loadUserPreference();
-        });
-
-        // 加载用户偏好
-        function loadUserPreference() {
-            const savedAutoScroll = localStorage.getItem('autoScrollEnabled');
-            const savedAutoRefresh = localStorage.getItem('autoRefreshEnabled');
-            const savedLevel = localStorage.getItem('logLevelFilter');
-            const savedSearch = localStorage.getItem('searchFilter');
-            
-            if (savedAutoScroll !== null) {
-                autoScrollEnabled = savedAutoScroll === 'true';
-                document.getElementById('autoScrollToggle').checked = autoScrollEnabled;
-            }
-            
-            if (savedAutoRefresh !== null) {
-                autoRefreshEnabled = savedAutoRefresh === 'true';
-                document.getElementById('pauseBtn').innerHTML = autoRefreshEnabled ? 
-                    '<i class="fas fa-pause"></i> 暂停' : 
-                    '<i class="fas fa-play"></i> 继续';
-            }
-            
-            if (savedLevel) {
-                currentLevel = savedLevel;
-                document.getElementById('logLevelFilter').value = savedLevel;
-                filterOutput();
-            }
-            
-            if (savedSearch) {
-                currentSearch = savedSearch;
-                document.getElementById('searchFilter').value = savedSearch;
-                filterOutput();
-            }
-        }
-
-        // 保存用户偏好
-        function saveUserPreference() {
-            localStorage.setItem('autoScrollEnabled', autoScrollEnabled);
-            localStorage.setItem('autoRefreshEnabled', autoRefreshEnabled);
-            localStorage.setItem('logLevelFilter', currentLevel);
-            localStorage.setItem('searchFilter', currentSearch);
-        }
-
-        // 开始自动刷新
-        function startAutoRefresh() {
-            if (refreshInterval) {
-                clearInterval(refreshInterval);
-            }
-            refreshInterval = setInterval(refreshOutput, autoRefreshInterval);
-        }
-
-        // 暂停/继续自动刷新
-        function pauseAutoRefresh() {
-            autoRefreshEnabled = !autoRefreshEnabled;
-            const btn = document.getElementById('pauseBtn');
-            
-            if (autoRefreshEnabled) {
-                startAutoRefresh();
-                btn.innerHTML = '<i class="fas fa-pause"></i> 暂停';
-                btn.className = 'output-btn btn-warning';
-                btn.title = '暂停自动刷新';
-            } else {
-                clearInterval(refreshInterval);
-                btn.innerHTML = '<i class="fas fa-play"></i> 继续';
-                btn.className = 'output-btn btn-success';
-                btn.title = '继续自动刷新';
-            }
-            
-            saveUserPreference();
-        }
-
-        // 智能刷新输出
-        function refreshOutput() {
-            if (!autoRefreshEnabled) return;
-            
-            fetch('/get_output')
-                .then(response => response.json())
-                .then(data => {
-                    if (data.output) {
-                        const newLines = data.output.split('\n');
-                        const hasNewContent = newLines.length > outputLines.length;
-                        
-                        // 保存当前滚动状态
-                        const outputDiv = document.getElementById('output');
-                        const wasNearBottom = isNearBottom(outputDiv);
-                        
-                        // 更新输出内容
-                        updateOutputContent(newLines);
-                        
-                        // 智能滚动
-                        if (hasNewContent) {
-                            if (autoScrollEnabled && wasNearBottom) {
-                                // 如果之前就在底部附近，就滚动到底部
-                                setTimeout(() => {
-                                    scrollToBottomSmooth();
-                                }, 100);
-                            } else if (!autoScrollEnabled) {
-                                // 如果用户暂停了自动滚动，标记新内容
-                                markNewLines(newLines.length - lastLineCount);
-                            }
-                        }
-                        
-                        // 更新最后更新时间
-                        updateLastUpdateTime();
-                        lastLineCount = newLines.length;
-                    }
-                })
-                .catch(error => {
-                    console.error('刷新输出失败:', error);
-                });
-        }
-
-        // 更新输出内容
-        function updateOutputContent(newLines) {
-            const outputDiv = document.getElementById('output');
-            const fragment = document.createDocumentFragment();
-            
-            // 清空现有内容
-            outputLines = [];
-            
-            // 创建新的内容
-            newLines.forEach((line, index) => {
-                const lineDiv = document.createElement('div');
-                lineDiv.className = 'log-line ' + getLineClass(line);
-                lineDiv.textContent = line;
-                lineDiv.dataset.index = index;
-                
-                // 处理时间戳
-                const timestampMatch = line.match(/(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})/);
-                if (timestampMatch) {
-                    const timestampSpan = document.createElement('span');
-                    timestampSpan.className = 'timestamp';
-                    timestampSpan.textContent = timestampMatch[0];
-                    lineDiv.innerHTML = '';
-                    lineDiv.appendChild(timestampSpan);
-                    lineDiv.appendChild(document.createTextNode(line.replace(timestampMatch[0], '')));
-                }
-                
-                fragment.appendChild(lineDiv);
-                outputLines.push({
-                    text: line,
-                    element: lineDiv,
-                    visible: true
-                });
-            });
-            
-            outputDiv.innerHTML = '';
-            outputDiv.appendChild(fragment);
-            
-            // 重新应用过滤
-            applyFilters();
-            updateStats();
-        }
-
-        // 获取日志行样式类
-        function getLineClass(line) {
-            if (line.includes('错误') || line.includes('失败') || line.includes('ERROR') || line.includes('error')) {
-                return 'error';
-            } else if (line.includes('成功') || line.includes('完成') || line.includes('SUCCESS') || line.includes('success')) {
-                return 'success';
-            } else if (line.includes('警告') || line.includes('WARNING') || line.includes('warning')) {
-                return 'warning';
-            } else if (line.includes('调试') || line.includes('DEBUG') || line.includes('debug')) {
-                return 'debug';
-            } else {
-                return 'info';
-            }
-        }
-
-        // 标记新行
-        function markNewLines(count) {
-            if (count <= 0) return;
-            
-            const outputDiv = document.getElementById('output');
-            const startIndex = Math.max(0, outputLines.length - count);
-            
-            for (let i = startIndex; i < outputLines.length; i++) {
-                if (outputLines[i] && outputLines[i].element) {
-                    outputLines[i].element.classList.add('new-line-indicator');
-                }
-            }
-            
-            // 移除标记
-            setTimeout(() => {
-                for (let i = startIndex; i < outputLines.length; i++) {
-                    if (outputLines[i] && outputLines[i].element) {
-                        outputLines[i].element.classList.remove('new-line-indicator');
-                    }
-                }
-            }, 2000);
-        }
-
-        // 检查是否在底部附近
-        function isNearBottom(element) {
-            const threshold = 100; // 距离底部100像素以内算"附近"
-            const distance = element.scrollHeight - element.scrollTop - element.clientHeight;
-            return distance <= threshold;
-        }
-
-        // 平滑滚动到底部
-        function scrollToBottomSmooth() {
-            const outputDiv = document.getElementById('output');
-            outputDiv.scrollTo({
-                top: outputDiv.scrollHeight,
-                behavior: 'smooth'
-            });
-        }
-
-        // 滚动到顶部
-        function scrollToTop() {
-            const outputDiv = document.getElementById('output');
-            outputDiv.scrollTo({
-                top: 0,
-                behavior: 'smooth'
-            });
-        }
-
-        // 滚动到底部
-        function scrollToBottom() {
-            const outputDiv = document.getElementById('output');
-            outputDiv.scrollTo({
-                top: outputDiv.scrollHeight,
-                behavior: 'smooth'
-            });
-        }
-
-        // 处理滚动事件
-        function handleScroll() {
-            const outputDiv = document.getElementById('output');
-            const scrollTopBtn = document.getElementById('scrollTopBtn');
-            const scrollBottomBtn = document.getElementById('scrollBottomBtn');
-            
-            // 显示/隐藏浮动按钮
-            if (outputDiv.scrollTop > 100) {
-                scrollTopBtn.style.display = 'flex';
-            } else {
-                scrollTopBtn.style.display = 'none';
-            }
-            
-            const distanceFromBottom = outputDiv.scrollHeight - outputDiv.scrollTop - outputDiv.clientHeight;
-            if (distanceFromBottom > 100) {
-                scrollBottomBtn.style.display = 'flex';
-            } else {
-                scrollBottomBtn.style.display = 'none';
-            }
-            
-            // 检测用户滚动
-            isUserScrolling = true;
-            
-            // 清除之前的定时器
-            if (scrollTimeout) {
-                clearTimeout(scrollTimeout);
-            }
-            
-            // 设置新的定时器
-            scrollTimeout = setTimeout(() => {
-                isUserScrolling = false;
-            }, 200);
-        }
-
-        // 过滤输出
-        function filterOutput() {
-            const levelFilter = document.getElementById('logLevelFilter').value;
-            const searchFilter = document.getElementById('searchFilter').value.toLowerCase();
-            
-            currentLevel = levelFilter;
-            currentSearch = searchFilter;
-            
-            applyFilters();
-            saveUserPreference();
-        }
-
-        // 应用过滤
-        function applyFilters() {
-            let visibleCount = 0;
-            
-            outputLines.forEach((lineObj, index) => {
-                const line = lineObj.text.toLowerCase();
-                const lineClass = getLineClass(lineObj.text);
-                let shouldShow = true;
-                
-                // 按级别过滤
-                if (currentLevel !== 'all' && lineClass !== currentLevel) {
-                    shouldShow = false;
-                }
-                
-                // 按关键词过滤
-                if (currentSearch && !line.includes(currentSearch)) {
-                    shouldShow = false;
-                }
-                
-                // 应用可见性
-                if (lineObj.element) {
-                    lineObj.element.style.display = shouldShow ? '' : 'none';
-                    lineObj.visible = shouldShow;
-                }
-                
-                if (shouldShow) visibleCount++;
-            });
-            
-            // 高亮搜索关键词
-            if (currentSearch) {
-                highlightSearch(currentSearch);
-            }
-            
-            filteredLines = visibleCount;
-            updateStats();
-        }
-
-        // 高亮搜索关键词
-        function highlightSearch(searchTerm) {
-            const outputDiv = document.getElementById('output');
-            const regex = new RegExp(`(${searchTerm})`, 'gi');
-            
-            outputLines.forEach(lineObj => {
-                if (lineObj.element && lineObj.visible) {
-                    const originalHTML = lineObj.element.innerHTML;
-                    const highlighted = originalHTML.replace(regex, '<span class="highlight">$1</span>');
-                    if (highlighted !== originalHTML) {
-                        lineObj.element.innerHTML = highlighted;
-                    }
-                }
-            });
-        }
-
-        // 更新统计信息
-        function updateStats() {
-            const totalLines = outputLines.length;
-            const visibleLines = filteredLines || totalLines;
-            
-            document.getElementById('lineCount').textContent = `共 ${totalLines} 行`;
-            document.getElementById('filteredCount').textContent = `显示 ${visibleLines} 行`;
-        }
-
-        // 更新最后更新时间
-        function updateLastUpdateTime() {
-            const now = new Date();
-            const timeStr = now.toLocaleTimeString('zh-CN', { 
-                hour12: false,
-                hour: '2-digit',
-                minute: '2-digit',
-                second: '2-digit'
-            });
-            document.getElementById('lastUpdate').textContent = `上次更新: ${timeStr}`;
-        }
-
-        // 显示清空确认
-        function showConfirm() {
-            document.getElementById('confirmOverlay').style.display = 'flex';
-        }
-
-        // 隐藏清空确认
-        function hideConfirm() {
-            document.getElementById('confirmOverlay').style.display = 'none';
-        }
-
-        // 确认清空输出
-        function confirmClearOutput() {
+        function clearOutput() {
             fetch('/clear_output', { method: 'POST' })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        outputLines = [];
-                        document.getElementById('output').innerHTML = '';
-                        updateStats();
-                        hideConfirm();
-                    }
+                .then(() => {
+                    document.getElementById('output').innerHTML = '';
+                    document.getElementById('apiMonitor').innerHTML = `
+                        <div class="empty-api">
+                            <i class="fas fa-search" style="font-size:24px;margin-bottom:10px"></i>
+                            <p>等待捕获接口请求...</p>
+                        </div>`;
+                    lastOutputLength = 0;
+                    processedApiSet.clear(); // 清空去重集合
                 });
         }
 
-        // 键盘快捷键
-        document.addEventListener('keydown', function(e) {
-            const outputDiv = document.getElementById('output');
-            if (!outputDiv) return;
-            
-            // 检查是否在输入框中
-            const activeElement = document.activeElement;
-            const isInInput = activeElement && (
-                activeElement.tagName === 'INPUT' || 
-                activeElement.tagName === 'TEXTAREA' || 
-                activeElement.isContentEditable
-            );
-            
-            if (isInInput) return;
-            
-            switch(e.key) {
-                case 'F5':
-                    e.preventDefault();
-                    refreshOutput();
-                    break;
-                case 'Home':
-                    if (e.ctrlKey) {
-                        e.preventDefault();
-                        scrollToTop();
-                    }
-                    break;
-                case 'End':
-                    if (e.ctrlKey) {
-                        e.preventDefault();
-                        scrollToBottom();
-                    }
-                    break;
-                case ' ':
-                    if (e.ctrlKey) {
-                        e.preventDefault();
-                        document.getElementById('autoScrollToggle').click();
-                    }
-                    break;
-                case 'r':
-                case 'R':
-                    if (e.ctrlKey) {
-                        e.preventDefault();
-                        pauseAutoRefresh();
-                    }
-                    break;
-                case 'Delete':
-                    if (e.ctrlKey) {
-                        e.preventDefault();
-                        showConfirm();
-                    }
-                    break;
+        // 处理 API 数据
+        function processApiData(line) {
+            try {
+                const jsonStr = line.split('__API_CAPTURE__|')[1];
+                
+                // 简单的去重机制：如果完全相同的JSON字符串已经处理过，则跳过
+                // 这可以防止因为网络重发或逻辑错误导致的UI重复
+                // 为了区分完全相同的多次请求，这里最好结合 requestId，但目前简单处理内容重复
+                // 如果需要允许完全相同内容的重复请求，可以注释掉下面三行
+                const signature = jsonStr.substring(0, 100) + jsonStr.length; // 简化的签名，提升性能
+                if (processedApiSet.has(signature)) {
+                     // 可以在这里决定是否允许重复显示。为了用户体验，暂时不去重，或者严格去重
+                     // 考虑到用户说"每次运行时都只展示当时那次"，我们主要依赖上面的"仅处理新增行"逻辑
+                }
+                // processedApiSet.add(signature); 
+
+                const data = JSON.parse(jsonStr);
+                renderApiCard(data);
+            } catch (e) {
+                console.error('API 解析失败', e);
             }
-        });
+        }
+
+        function renderApiCard(data) {
+            const container = document.getElementById('apiMonitor');
+            
+            // 移除空状态
+            if (container.querySelector('.empty-api')) {
+                container.innerHTML = '';
+            }
+
+            const method = data.method || (data.response_body ? 'POST' : 'GET');
+            const statusClass = (data.status >= 200 && data.status < 300) ? 'success' : 'error';
+            const statusText = data.status || 'Checking...';
+            
+            // 生成绝对唯一的 ID
+            // 组合：前缀 + 时间戳 + 全局计数器 + 随机数
+            cardUniqueIdCounter++;
+            const cardId = `api-${Date.now()}-${cardUniqueIdCounter}-${Math.floor(Math.random() * 10000)}`;
+            
+            const html = `
+                <div class="api-item">
+                    <div class="api-header" onclick="toggleDetails('${cardId}')">
+                        <div style="display:flex;align-items:center;width:100%">
+                            <span class="api-method ${method}">${method}</span>
+                            <span class="api-url" title="${data.url}">${data.url}</span>
+                            <span class="api-status ${statusClass}">${statusText}</span>
+                            <i class="fas fa-chevron-down" style="font-size:12px;margin-left:auto;color:#a0aec0"></i>
+                        </div>
+                    </div>
+                    <div id="${cardId}" class="api-details">
+                        ${data.requestId ? `<div style="font-size:10px;color:#cbd5e0;margin-bottom:5px">ID: ${data.requestId}</div>` : ''}
+                        
+                        ${data.request_headers ? `
+                        <div class="detail-section">
+                            <div class="detail-title">Request Headers</div>
+                            <div class="json-box">${JSON.stringify(data.request_headers, null, 2)}</div>
+                        </div>` : ''}
+                        
+                        ${data.request_body ? `
+                        <div class="detail-section">
+                            <div class="detail-title">Request Body 
+                                <button class="copy-btn" onclick="copyText(this)">Copy</button>
+                            </div>
+                            <div class="json-box">${formatBody(data.request_body)}</div>
+                        </div>` : ''}
+
+                        ${data.response_headers ? `
+                        <div class="detail-section">
+                            <div class="detail-title">Response Headers</div>
+                            <div class="json-box">${JSON.stringify(data.response_headers, null, 2)}</div>
+                        </div>` : ''}
+
+                        ${data.response_body ? `
+                        <div class="detail-section">
+                            <div class="detail-title">Response Body
+                                <button class="copy-btn" onclick="copyText(this)">Copy</button>
+                            </div>
+                            <div class="json-box">${formatBody(data.response_body)}</div>
+                        </div>` : ''}
+                    </div>
+                </div>
+            `;
+            
+            // 将新卡片插入到顶部
+            container.insertAdjacentHTML('afterbegin', html);
+        }
+
+        function toggleDetails(id) {
+            console.log("Toggling ID:", id); // 调试日志
+            const el = document.getElementById(id);
+            if (el) {
+                if (el.classList.contains('open')) {
+                    el.classList.remove('open');
+                } else {
+                    el.classList.add('open');
+                }
+            } else {
+                console.error("Element not found:", id);
+            }
+        }
+
+        function formatBody(body) {
+            try {
+                if (typeof body === 'string') {
+                    const obj = JSON.parse(body);
+                    return JSON.stringify(obj, null, 2);
+                }
+                return JSON.stringify(body, null, 2);
+            } catch (e) {
+                return body; 
+            }
+        }
+
+        function copyText(btn) {
+            const text = btn.parentElement.nextElementSibling.textContent;
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textarea);
+            
+            const originalText = btn.textContent;
+            btn.textContent = 'Copied!';
+            setTimeout(() => btn.textContent = originalText, 1000);
+        }
     </script>
 </body>
 </html>

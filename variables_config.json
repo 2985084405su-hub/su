@@ -29,7 +29,7 @@
     "type": "text",
     "default": "2985084405su@gmail.com",
     "required": false,
-    "description": "用于支付的用户邮箱（可选，不填使用默认值）"
+    "description": "用于支付的用户邮箱（可选，不填使用默认值）\npaypal邮箱：sx-duanjuceshi@personal.example.com"
   },
   {
     "name": "card_no",
